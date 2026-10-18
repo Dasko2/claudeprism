@@ -1,7 +1,7 @@
 {
-  "required": true,
+  "required": false,
   "package": "net.prismfeatures.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["SimpleOptionAccessor"],
-  "injectors": { "defaultRequire": 1 }
+  "client": ["MinecraftClientMixin", "InGameHudMixin", "InteractionManagerMixin", "ItemStackMixin"],
+  "injectors": { "defaultRequire": 0 }
 }

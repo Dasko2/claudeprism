@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 # 1) charges utiles : une par loader / version de Minecraft
 mkdir -p agent/src/main/resources/payloads
 gradle build
-cp build/libs/prismfeatures-fabric-*.jar agent/src/main/resources/payloads/fabric-1.21.1.jar
+cp build/libs/prismfeatures-fabric-*.jar agent/src/main/resources/payloads/fabric-1.21.11.jar
 # (ajouter ici d'autres payloads : fabric-1.20.1.jar, ... forge-1.20.1.jar, neoforge-1.21.1.jar)
 
 # 2) agent unique qui les embarque

@@ -80,6 +80,7 @@ void apply(MinecraftInstance* instance)
     config["shulkerPreview"] = settings->get("FeatureShulkerPreview").toBool();
     config["chestPreview"] = settings->get("FeatureChestPreview").toBool();
     config["hud"] = settings->get("FeatureHud").toBool();
+    config["minimap"] = settings->get("FeatureMinimap").toBool();
 
     const QString configDir = QDir(instance->gameRoot()).filePath("config");
     FS::ensureFolderPathExists(configDir);

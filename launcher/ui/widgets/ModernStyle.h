@@ -103,6 +103,49 @@ inline QString workspaceTabs()
         "QTabBar#pageTabs::tab:selected { background: palette(highlight); color: palette(highlighted-text); }");
 }
 
+/// Habillage moderne appliqué à toutes les pages d'instance (listes, boutons, champs, barres de défilement).
+inline QString pages()
+{
+    return QStringLiteral(
+        "QTreeView, QTableView, QListView { border: 1px solid palette(midlight); border-radius: 14px; background: palette(base); "
+        "alternate-background-color: rgba(127,127,127,16); gridline-color: transparent; padding: 4px; outline: none; }"
+        "QTreeView::item, QTableView::item, QListView::item { padding: 6px 4px; border-radius: 8px; }"
+        "QTreeView::item:hover, QTableView::item:hover, QListView::item:hover { background: rgba(127,127,127,34); }"
+        "QTreeView::item:selected, QTableView::item:selected, QListView::item:selected "
+        "{ background: palette(highlight); color: palette(highlighted-text); }"
+        "QHeaderView::section { background: transparent; border: none; border-bottom: 1px solid palette(midlight); "
+        "padding: 8px 6px; font-weight: 700; color: palette(placeholder-text); }"
+        "QHeaderView { background: transparent; }"
+
+        "QToolBar { border: none; background: transparent; spacing: 6px; padding: 2px; }"
+        "QToolButton { background: rgba(127,127,127,30); border: none; border-radius: 10px; padding: 8px 12px; font-weight: 600; }"
+        "QToolButton:hover { background: rgba(127,127,127,70); }"
+        "QToolButton:pressed, QToolButton:checked { background: palette(highlight); color: palette(highlighted-text); }"
+        "QToolButton:disabled { color: rgba(127,127,127,140); background: rgba(127,127,127,14); }"
+        "QToolButton::menu-indicator { image: none; }"
+
+        "QPushButton { background: rgba(127,127,127,34); border: none; border-radius: 10px; padding: 8px 16px; font-weight: 600; }"
+        "QPushButton:hover { background: rgba(127,127,127,70); }"
+        "QPushButton:default { background: palette(highlight); color: palette(highlighted-text); }"
+        "QPushButton:disabled { color: rgba(127,127,127,140); background: rgba(127,127,127,14); }"
+
+        "QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QPlainTextEdit, QTextEdit { border: 1px solid palette(midlight); "
+        "border-radius: 10px; padding: 6px 10px; background: palette(base); selection-background-color: palette(highlight); }"
+        "QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QPlainTextEdit:focus, QTextEdit:focus { border: 1px solid palette(highlight); }"
+        "QComboBox::drop-down { border: none; width: 22px; }"
+
+        "QGroupBox { border: 1px solid palette(midlight); border-radius: 14px; margin-top: 12px; padding: 12px; font-weight: 700; }"
+        "QGroupBox::title { subcontrol-origin: margin; left: 14px; padding: 0 6px; }"
+
+        "QScrollBar:vertical { background: transparent; width: 10px; margin: 2px; }"
+        "QScrollBar::handle:vertical { background: rgba(127,127,127,90); border-radius: 4px; min-height: 30px; }"
+        "QScrollBar::handle:vertical:hover { background: rgba(127,127,127,150); }"
+        "QScrollBar:horizontal { background: transparent; height: 10px; margin: 2px; }"
+        "QScrollBar::handle:horizontal { background: rgba(127,127,127,90); border-radius: 4px; min-width: 30px; }"
+        "QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }"
+        "QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }");
+}
+
 inline QString workspaceMessage()
 {
     return QStringLiteral("QLabel#workspaceMessage { color: palette(placeholder-text); font-size: 15px; padding: 40px; }");

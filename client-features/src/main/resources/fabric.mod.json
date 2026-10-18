@@ -2,15 +2,14 @@
   "schemaVersion": 1,
   "id": "prismfeatures",
   "version": "${version}",
-  "name": "Prism Client Features",
-  "description": "Fonctionnalités intégrées du launcher (mod caché).",
+  "name": "Client Features",
+  "description": "Fonctionnalités intégrées du launcher.",
   "environment": "client",
   "entrypoints": { "client": ["net.prismfeatures.PrismFeatures"] },
   "mixins": ["prismfeatures.mixins.json"],
   "depends": {
-    "fabricloader": ">=0.15.0",
-    "minecraft": "~1.21.1",
-    "java": ">=21",
-    "fabric-api": "*"
+    "fabricloader": ">=0.16.0",
+    "minecraft": "1.21.11",
+    "java": ">=21"
   }
 }

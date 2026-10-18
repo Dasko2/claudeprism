@@ -431,11 +431,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     // TODO: refresh accounts here?
     // auto accounts = APPLICATION->accounts();
 
-    // load the news
-    {
-        m_newsChecker->reloadNews();
-        updateNewsLabel();
-    }
+    // plus de barre d'actualités ni de barre d'état : interface épurée
+    ui->newsToolBar->hide();
+    ui->newsToolBar->toggleViewAction()->setEnabled(false);
+    statusBar()->hide();
 
     if (APPLICATION->updaterEnabled()) {
         bool updatesAllowed = APPLICATION->updatesAreAllowed();
@@ -2222,15 +2221,8 @@ QMenu* MainWindow::buildMoreMenu()
 {
     auto* menu = new QMenu(this);
     menu->addMenu(ui->foldersMenu);
-    menu->addMenu(ui->helpMenu);
     menu->addAction(ui->actionChangeTheme);
-    menu->addSeparator();
-    menu->addAction(ui->actionCheckUpdate);
-    menu->addAction(ui->actionMoreNews);
     menu->addAction(ui->actionUndoTrashInstance);
-    menu->addSeparator();
-    menu->addAction(ui->actionCAT);
-    menu->addAction(ui->actionToggleStatusBar);
     menu->addSeparator();
     menu->addAction(ui->actionManageAccounts);
     return menu;

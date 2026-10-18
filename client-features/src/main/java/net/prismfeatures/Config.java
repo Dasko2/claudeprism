@@ -13,6 +13,7 @@ public final class Config {
     public static boolean shulkerPreview = true;
     public static boolean chestPreview = true;
     public static boolean hud = true;
+    public static boolean minimap = true;
 
     public static void load() {
         Path file = FabricLoader.getInstance().getConfigDir().resolve("prismfeatures.json");
@@ -23,6 +24,7 @@ public final class Config {
             shulkerPreview = bool(json, "shulkerPreview", shulkerPreview);
             chestPreview = bool(json, "chestPreview", chestPreview);
             hud = bool(json, "hud", hud);
+            minimap = bool(json, "minimap", minimap);
         } catch (Exception e) {
             PrismFeatures.LOGGER.warn("Config illisible, valeurs par défaut utilisées", e);
         }

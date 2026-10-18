@@ -39,6 +39,7 @@
 InstanceWorkspace::InstanceWorkspace(QWidget* parent) : QWidget(parent)
 {
     setObjectName("instanceWorkspace");
+    setStyleSheet(ModernStyle::pages());
 
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);

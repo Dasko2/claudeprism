@@ -28,4 +28,5 @@ class FeaturesPage : public QWidget, public BasePage {
     QCheckBox* m_shulker = nullptr;
     QCheckBox* m_chest = nullptr;
     QCheckBox* m_hud = nullptr;
+    QCheckBox* m_minimap = nullptr;
 };
