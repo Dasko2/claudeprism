@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "ClientFeatures.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -33,6 +34,10 @@ QString loaderOf(MinecraftInstance* instance)
 
 QString agentJarPath()
 {
+    // installé (caché) à côté de l'application par l'installeur ; sinon dans le dossier de données
+    const QString bundled = FS::PathCombine(QCoreApplication::applicationDirPath(), "features", "prismfeatures.jar");
+    if (QFileInfo::exists(bundled))
+        return bundled;
     return FS::PathCombine(APPLICATION->dataRoot(), "features", "prismfeatures.jar");
 }
 
