@@ -42,6 +42,7 @@ public class PrismFeatures implements ClientModInitializer {
 
     private static boolean nightVisionOn = false;
     private static boolean nightKeyWasDown = false;
+    private static boolean menuKeyWasDown = false;
     private static boolean failed = false;
 
     private static BlockPos lastClicked = null;
@@ -78,6 +79,11 @@ public class PrismFeatures implements ClientModInitializer {
                 if (!nightVisionOn) client.player.removeStatusEffect(StatusEffects.NIGHT_VISION);
             }
             nightKeyWasDown = down;
+
+            // Maj droite : menu des fonctionnalités
+            boolean menuDown = client.currentScreen == null && InputUtil.isKeyPressed(client.getWindow(), GLFW.GLFW_KEY_RIGHT_SHIFT);
+            if (menuDown && !menuKeyWasDown) client.setScreen(new FeaturesScreen());
+            menuKeyWasDown = menuDown;
             if (!Config.nightVision && nightVisionOn) {
                 nightVisionOn = false;
                 client.player.removeStatusEffect(StatusEffects.NIGHT_VISION);

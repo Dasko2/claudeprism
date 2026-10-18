@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/features">
-        <file alias="core.bin">prismfeatures.jar</file>
+        <file alias="fabric-1.21.11.jar">fabric-1.21.11.jar</file>
     </qresource>
 </RCC>

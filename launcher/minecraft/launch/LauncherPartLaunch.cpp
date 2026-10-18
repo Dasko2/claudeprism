@@ -34,6 +34,7 @@
  */
 
 #include "LauncherPartLaunch.h"
+#include "ClientFeatures.h"
 
 #include <QRegularExpression>
 #include <QStandardPaths>
@@ -95,6 +96,7 @@ void LauncherPartLaunch::executeTask()
     QStringList args = instance->javaArguments();
     QString allArgs = args.join(" ");
     emit logLine("Java arguments:\n  " + m_parent->censorPrivateInfo(allArgs) + "\n", MessageLevel::Launcher);
+    emit logLine("Fonctionnalités intégrées : " + ClientFeatures::statusText(instance) + "\n", MessageLevel::Launcher);
 
     auto javaPath = FS::ResolveExecutable(instance->settings()->get("JavaPath").toString());
 

@@ -68,6 +68,9 @@ int main(int argc, char* argv[])
             Q_INIT_RESOURCE(flat_white);
 
             Q_INIT_RESOURCE(shaders);
+#ifdef PRISM_EMBEDDED_AGENT
+            Q_INIT_RESOURCE(features);
+#endif
             return app.exec();
         }
         case Application::Failed:

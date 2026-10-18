@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "ClientFeatures.h"
 
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -36,15 +37,23 @@ static QString featuresDir()
     return FS::PathCombine(APPLICATION->dataRoot(), "features");
 }
 
-QString agentJarPath()
+/// Extrait la charge utile embarquée (:/features/<loader>-<mc>.jar) et renvoie son chemin ; vide si absente.
+static QString extractPayload(const QString& loader, const QString& mc)
 {
-    // L'agent est embarqué dans l'exécutable du launcher et extrait dans son dossier de données.
-    // Il est simplement mis à jour quand la version embarquée change ; l'utilisateur n'a jamais à y toucher.
-    const QString target = FS::PathCombine(featuresDir(), "prismfeatures.jar");
-    QFile embedded(":/features/core.bin");
-    if (embedded.exists() && embedded.open(QIODevice::ReadOnly)) {
+    QStringList names;
+    names << QString("%1-%2.jar").arg(loader, mc);
+    const auto parts = mc.split('.');
+    if (parts.size() >= 2)
+        names << QString("%1-%2.%3.jar").arg(loader, parts[0], parts[1]);
+
+    for (const QString& name : names) {
+        QFile embedded(":/features/" + name);
+        if (!embedded.exists() || !embedded.open(QIODevice::ReadOnly))
+            continue;
         const QByteArray data = embedded.readAll();
-        QDir().mkpath(featuresDir());
+        const QString dir = FS::PathCombine(featuresDir(), "payload");
+        QDir().mkpath(dir);
+        const QString target = FS::PathCombine(dir, name);
         QFile current(target);
         bool same = false;
         if (current.exists() && current.open(QIODevice::ReadOnly)) {
@@ -59,8 +68,9 @@ QString agentJarPath()
                 out.close();
             }
         }
+        return QFileInfo(target).absoluteFilePath();
     }
-    return target;
+    return {};
 }
 
 void apply(MinecraftInstance* instance)
@@ -89,23 +99,50 @@ void apply(MinecraftInstance* instance)
         out.write(QJsonDocument(config).toJson(QJsonDocument::Indented));
 }
 
+QString statusText(MinecraftInstance* instance)
+{
+    if (!APPLICATION->settings()->get("FeaturesEnabled").toBool())
+        return "fonctionnalités désactivées dans les paramètres";
+    auto profile = instance ? instance->getPackProfile() : nullptr;
+    const QString mc = profile ? profile->getComponentVersion("net.minecraft") : QString();
+    const QString loader = loaderOf(instance);
+    if (loader.isEmpty())
+        return QString("aucun mod loader (Vanilla), minecraft=%1 -> installez Fabric dans « Version modée »").arg(mc);
+    if (loader != "fabric" && loader != "quilt")
+        return QString("loader %1 pas encore pris en charge").arg(loader);
+    const QString payload = extractPayload(loader, mc);
+    if (payload.isEmpty())
+        return QString("aucune charge utile pour %1 %2 (versions prises en charge : 1.21.11)").arg(loader, mc);
+    return QString("OK : %1 %2, mod chargé depuis %3").arg(loader, mc, QFileInfo(payload).fileName());
+}
+
 QStringList jvmArguments(MinecraftInstance* instance)
 {
     if (!APPLICATION->settings()->get("FeaturesEnabled").toBool())
         return {};
-    const QString jar = QDir::toNativeSeparators(QFileInfo(agentJarPath()).absoluteFilePath());
-    if (!QFileInfo::exists(jar)) {
-        qWarning() << "ClientFeatures : agent introuvable :" << jar;
-        return {};
-    }
 
+    const QString loader = loaderOf(instance);
     auto profile = instance->getPackProfile();
     const QString mc = profile ? profile->getComponentVersion("net.minecraft") : QString();
-    const QString cache = QDir::toNativeSeparators(QFileInfo(FS::PathCombine(featuresDir(), "cache")).absoluteFilePath());
 
-    // arguments séparés par « | » (les chemins Windows contiennent « : » et « ; » est réservé)
-    const QString agentArgs = QString("loader=%1|mc=%2|cache=%3").arg(loaderOf(instance), mc, cache);
-    return { QString("-javaagent:%1=%2").arg(jar, agentArgs) };
+    if (loader != "fabric" && loader != "quilt") {
+        qWarning() << "ClientFeatures : loader" << (loader.isEmpty() ? "vanilla" : loader) << "non pris en charge pour l'instant";
+        return {};
+    }
+    const QString payload = extractPayload(loader, mc);
+    if (payload.isEmpty()) {
+        qWarning() << "ClientFeatures : aucune charge utile pour" << loader << mc;
+        return {};
+    }
+    const QString path = QDir::toNativeSeparators(payload);
+    qInfo() << "ClientFeatures : chargement de" << path;
+
+    // Fabric et Quilt chargent directement ce jar, sans qu'il soit dans le dossier mods (donc invisible).
+    QStringList args;
+    args << QString("-Dfabric.addMods=%1").arg(path);
+    if (loader == "quilt")
+        args << QString("-Dloader.addMods=%1").arg(path);
+    return args;
 }
 
 }  // namespace ClientFeatures

@@ -34,12 +34,25 @@ jobs:
         with:
           name: prismfeatures
           path: client-features/agent/build/libs/*.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: payloads
+          path: client-features/agent/src/main/resources/payloads/*.jar
 
   launcher:
     name: Launcher (Linux, Qt6)
+    needs: client-features
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: payloads
+          path: payloads
+      - name: Embarquer le mod dans l'exécutable
+        run: |
+          mkdir -p launcher/resources/features
+          cp payloads/*.jar launcher/resources/features/
       - uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.*'
@@ -103,10 +116,10 @@ jobs:
           git clone --depth 1 https://github.com/microsoft/vcpkg.git cmake/vcpkg
       - uses: actions/download-artifact@v4
         with:
-          name: prismfeatures
-          path: agent-jar
-      - name: Embarquer l'agent dans l'exécutable
-        run: cp agent-jar/*.jar launcher/resources/features/prismfeatures.jar
+          name: payloads
+          path: payloads
+      - name: Embarquer le mod dans l'exécutable
+        run: cp payloads/*.jar launcher/resources/features/
       - name: Setup dependencies
         id: setup-dependencies
         uses: ./.github/actions/setup-dependencies
