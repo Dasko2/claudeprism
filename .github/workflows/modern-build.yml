@@ -1,0 +1,51 @@
+name: Modern build
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  client-features:
+    name: Agent + mod Fabric (prismfeatures.jar)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.8'
+      - name: Build
+        working-directory: client-features
+        run: sh build-all.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prismfeatures
+          path: client-features/agent/build/libs/*.jar
+
+  launcher:
+    name: Launcher (Linux, Qt6)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Dépendances
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build extra-cmake-modules g++ \
+            qt6-base-dev qt6-base-private-dev qt6-5compat-dev qt6-networkauth-dev \
+            libgl1-mesa-dev libcmark-dev libtomlplusplus-dev libquazip1-qt6-dev \
+            zlib1g-dev libqrencode-dev libarchive-dev scdoc openjdk-17-jdk
+      - name: Configurer
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLauncher_QT_VERSION_MAJOR=6
+      - name: Compiler
+        run: cmake --build build 2>&1 | tee build.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-log
+          path: build.log
