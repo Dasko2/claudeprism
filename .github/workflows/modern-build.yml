@@ -52,7 +52,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build extra-cmake-modules g++ \
-            libgl1-mesa-dev libxkbcommon-dev libcmark-dev libtomlplusplus-dev libquazip1-qt6-dev \
+            libgl1-mesa-dev libxkbcommon-dev cmark libcmark-dev libtomlplusplus-dev libquazip1-qt6-dev \
             zlib1g-dev libqrencode-dev libarchive-dev scdoc openjdk-17-jdk
       - name: Configurer
         shell: bash
