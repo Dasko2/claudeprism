@@ -62,3 +62,4 @@ flatbuild
 
 # Snap
 *.snap
+launcher/resources/features/prismfeatures.jar

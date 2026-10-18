@@ -34,8 +34,7 @@ FeaturesPage::FeaturesPage(QWidget* parent) : QWidget(parent)
 
     auto* status = new QLabel(this);
     status->setWordWrap(true);
-    status->setText(tr("Le mod est caché (invisible dans la page Mods). Fichier unique (java agent) : %1")
-                        .arg(QFileInfo(ClientFeatures::agentJarPath()).absoluteFilePath()));
+    status->setText(tr("Ces fonctionnalités sont intégrées au launcher et appliquées automatiquement au lancement du jeu."));
     layout->addWidget(status);
     layout->addStretch(1);
 

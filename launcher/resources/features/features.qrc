@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/features">
+        <file alias="core.bin">prismfeatures.jar</file>
+    </qresource>
+</RCC>

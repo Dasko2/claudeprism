@@ -1220,6 +1220,12 @@ qt_add_resources(LAUNCHER_RESOURCES
     "${CMAKE_CURRENT_BINARY_DIR}/../${Launcher_Branding_LogoQRC}"
 )
 
+# agent des fonctionnalités intégrées : embarqué dans l'exécutable s'il a été construit avant le launcher
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources/features/prismfeatures.jar")
+    qt_add_resources(LAUNCHER_FEATURES_RESOURCES resources/features/features.qrc)
+    list(APPEND LAUNCHER_RESOURCES ${LAUNCHER_FEATURES_RESOURCES})
+endif()
+
 ######## Windows resource files ########
 if(WIN32)
     set(LAUNCHER_RCS ${CMAKE_CURRENT_BINARY_DIR}/../${Launcher_Branding_WindowsRC})

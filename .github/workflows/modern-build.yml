@@ -101,6 +101,12 @@ jobs:
         run: |
           rm -rf cmake/vcpkg
           git clone --depth 1 https://github.com/microsoft/vcpkg.git cmake/vcpkg
+      - uses: actions/download-artifact@v4
+        with:
+          name: prismfeatures
+          path: agent-jar
+      - name: Embarquer l'agent dans l'exécutable
+        run: cp agent-jar/*.jar launcher/resources/features/prismfeatures.jar
       - name: Setup dependencies
         id: setup-dependencies
         uses: ./.github/actions/setup-dependencies
@@ -129,14 +135,6 @@ jobs:
           exit $rc
       - name: Installer dans un dossier
         run: cmake --install build --config Release --prefix install
-      - uses: actions/download-artifact@v4
-        with:
-          name: prismfeatures
-          path: agent-jar
-      - name: Agent caché
-        run: |
-          mkdir -p install/features
-          cp agent-jar/*.jar install/features/prismfeatures.jar
       - name: Installeur unique (Setup.exe)
         shell: pwsh
         run: |
