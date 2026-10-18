@@ -19,7 +19,17 @@ jobs:
           gradle-version: '8.8'
       - name: Build
         working-directory: client-features
-        run: sh build-all.sh
+        shell: bash
+        run: |
+          set +e
+          sh build-all.sh > ../build.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            msg=$(grep -E "error:|error |FAILED|What went wrong|Could not|Execution failed|not found|No such" -A2 ../build.log | head -c 3500 | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')
+            echo "::error title=build-fabric::$msg"
+            tail -n 40 ../build.log | head -c 3000 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g' | sed 's/^/::error title=tail-fabric::/'
+          fi
+          exit $rc
       - uses: actions/upload-artifact@v4
         with:
           name: prismfeatures
@@ -41,9 +51,25 @@ jobs:
             libgl1-mesa-dev libcmark-dev libtomlplusplus-dev libquazip1-qt6-dev \
             zlib1g-dev libqrencode-dev libarchive-dev scdoc openjdk-17-jdk
       - name: Configurer
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLauncher_QT_VERSION_MAJOR=6
+        shell: bash
+        run: |
+          set +e
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLauncher_QT_VERSION_MAJOR=6 > build.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            tail -n 30 build.log | head -c 3500 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g' | sed 's/^/::error title=cmake-configure::/'
+          fi
+          exit $rc
       - name: Compiler
-        run: cmake --build build 2>&1 | tee build.log
+        shell: bash
+        run: |
+          set +e
+          cmake --build build -k 0 > build.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            grep -E "error:|Error " -A3 build.log | head -c 3800 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g' | sed 's/^/::error title=compile::/'
+          fi
+          exit $rc
       - uses: actions/upload-artifact@v4
         if: always()
         with:
