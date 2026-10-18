@@ -79,3 +79,56 @@ jobs:
         with:
           name: build-log
           path: build.log
+
+  windows:
+    name: Launcher (Windows .exe)
+    runs-on: windows-2022
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUILD_TYPE: Release
+      CMAKE_PRESET: windows_msvc
+    steps:
+      - uses: actions/checkout@v4
+      - name: libnbtplusplus
+        run: git clone --depth 1 https://github.com/PrismLauncher/libnbtplusplus.git libraries/libnbtplusplus
+      - name: vcpkg
+        run: |
+          rm -rf cmake/vcpkg
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git cmake/vcpkg
+      - name: Setup dependencies
+        id: setup-dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          build-type: Release
+          artifact-name: Windows-MSVC
+          vcvars-arch: amd64
+          qt-version: 6.11.2
+      - name: Configurer
+        run: |
+          set +e
+          cmake --preset "$CMAKE_PRESET" -D VCPKG_HOST_TRIPLET="$VCPKG_TRIPLET" -D VCPKG_TARGET_TRIPLET="$VCPKG_TRIPLET" > build.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            tail -n 40 build.log | head -c 3500 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g' | sed 's/^/::error title=win-configure::/'
+          fi
+          exit $rc
+      - name: Compiler
+        run: |
+          set +e
+          cmake --build --preset "$CMAKE_PRESET" --config "$BUILD_TYPE" > build.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            ( grep -E "error|FAILED" -A3 build.log | head -c 3300; echo; echo ---TAIL---; tail -n 8 build.log | head -c 500 ) | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g' | sed 's/^/::error title=win-compile::/'
+          fi
+          exit $rc
+      - name: Installer dans un dossier
+        run: cmake --install build --config Release --prefix install
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PrismLauncher-Windows
+          path: install
