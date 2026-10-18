@@ -40,8 +40,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.*'
@@ -54,6 +52,8 @@ jobs:
             cmake ninja-build extra-cmake-modules g++ \
             libgl1-mesa-dev libxkbcommon-dev cmark libcmark-dev libtomlplusplus-dev libquazip1-qt6-dev \
             zlib1g-dev libqrencode-dev libarchive-dev scdoc openjdk-17-jdk
+      - name: libnbtplusplus
+        run: git clone --depth 1 https://github.com/PrismLauncher/libnbtplusplus.git libraries/libnbtplusplus
       - name: Configurer
         shell: bash
         run: |
