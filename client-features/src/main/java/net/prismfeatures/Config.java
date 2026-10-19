@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Deux sources :
  *  - config/prismfeatures.json        : autorisations écrites par le launcher (réglages globaux) ;
- *  - config/prismfeatures-user.json   : choix faits dans le menu en jeu (Maj droite).
+ *  - config/prismfeatures-user.json   : choix faits dans le menu en jeu (interrupteurs + touches).
  * Une fonctionnalité est active seulement si le launcher l'autorise ET si le joueur ne l'a pas coupée.
  */
 public final class Config {
@@ -21,15 +21,23 @@ public final class Config {
     public static final String HUD = "hud";
     public static final String CHEST = "chestPreview";
     public static final String SHULKER = "shulkerPreview";
+    public static final String ZOOM = "zoom";
+    public static final String AUTO_SPRINT = "autoSprint";
+    public static final String ARMOR = "armor";
+    public static final String DEATH = "deathPoint";
 
     /** clé -> libellé affiché dans le menu */
     public static final Map<String, String> LABELS = new LinkedHashMap<>();
     static {
-        LABELS.put(NIGHT_VISION, "Night vision (touche N)");
+        LABELS.put(NIGHT_VISION, "Night vision");
         LABELS.put(MINIMAP, "Minimap");
-        LABELS.put(HUD, "FPS et coordonnées");
-        LABELS.put(CHEST, "Contenu des coffres");
-        LABELS.put(SHULKER, "Contenu des shulkers");
+        LABELS.put(HUD, "Infos (FPS, XYZ, biome...)");
+        LABELS.put(CHEST, "Vision des coffres");
+        LABELS.put(SHULKER, "Vision des shulkers");
+        LABELS.put(ZOOM, "Zoom");
+        LABELS.put(AUTO_SPRINT, "Sprint automatique");
+        LABELS.put(ARMOR, "Armure et durabilité");
+        LABELS.put(DEATH, "Point de mort");
     }
 
     private static JsonObject launcher = new JsonObject();
@@ -40,6 +48,10 @@ public final class Config {
     public static boolean chestPreview = true;
     public static boolean hud = true;
     public static boolean minimap = true;
+    public static boolean zoom = true;
+    public static boolean autoSprint = true;
+    public static boolean armor = true;
+    public static boolean deathPoint = true;
 
     private static Path dir() {
         return FabricLoader.getInstance().getConfigDir();
@@ -79,6 +91,21 @@ public final class Config {
     public static void toggle(String key) {
         user.addProperty(key, !get(user, key));
         recompute();
+        persist();
+    }
+
+    // ---- touches (codes GLFW) ----
+    public static int key(String name, int def) {
+        String k = "key." + name;
+        return user.has(k) ? user.get(k).getAsInt() : def;
+    }
+
+    public static void setKey(String name, int code) {
+        user.addProperty("key." + name, code);
+        persist();
+    }
+
+    private static void persist() {
         try {
             Files.writeString(dir().resolve("prismfeatures-user.json"), new Gson().toJson(user));
         } catch (Exception e) {
@@ -92,5 +119,9 @@ public final class Config {
         chestPreview = enabled(CHEST);
         hud = enabled(HUD);
         minimap = enabled(MINIMAP);
+        zoom = enabled(ZOOM);
+        autoSprint = enabled(AUTO_SPRINT);
+        armor = enabled(ARMOR);
+        deathPoint = enabled(DEATH);
     }
 }
