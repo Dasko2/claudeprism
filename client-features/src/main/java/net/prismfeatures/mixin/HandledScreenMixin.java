@@ -25,6 +25,6 @@ public abstract class HandledScreenMixin<T extends ScreenHandler> extends Screen
 
     @Inject(method = "render", at = @At("TAIL"))
     private void prism$shulkerPreview(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (this.focusedSlot != null) PrismFeatures.onShulkerHover(context, this.focusedSlot.getStack(), mouseX, mouseY);
+        if (this.focusedSlot != null) PrismFeatures.onSlotHover(context, this.focusedSlot, mouseX, mouseY);
     }
 }

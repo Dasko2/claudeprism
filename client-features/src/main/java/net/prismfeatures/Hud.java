@@ -37,17 +37,37 @@ public final class Hud {
         abstract void draw(DrawContext ctx, MinecraftClient c, int x, int y, boolean preview);
         abstract boolean hasContent(MinecraftClient c);
 
+        public double scale() { return Config.scale(id); }
+        int sw(MinecraftClient c, boolean preview) { return (int) Math.ceil(width(c, preview) * scale()); }
+        int sh(MinecraftClient c, boolean preview) { return (int) Math.ceil(height(c, preview) * scale()); }
+
         public int x(int screenW, MinecraftClient c, boolean preview) {
-            return (int) Math.round(Config.pos(id, defX, defY)[0] * Math.max(0, screenW - width(c, preview)));
+            return (int) Math.round(Config.pos(id, defX, defY)[0] * Math.max(0, screenW - sw(c, preview)));
         }
 
         public int y(int screenH, MinecraftClient c, boolean preview) {
-            return (int) Math.round(Config.pos(id, defX, defY)[1] * Math.max(0, screenH - height(c, preview)));
+            return (int) Math.round(Config.pos(id, defX, defY)[1] * Math.max(0, screenH - sh(c, preview)));
         }
 
-        public int w(MinecraftClient c) { return width(c, true); }
-        public int h(MinecraftClient c) { return height(c, true); }
-        public void drawPreview(DrawContext ctx, MinecraftClient c, int x, int y) { draw(ctx, c, x, y, true); }
+        public int w(MinecraftClient c) { return sw(c, true); }
+        public int h(MinecraftClient c) { return sh(c, true); }
+
+        /** Dessine l'élément à sa taille choisie (échelle). */
+        public void drawScaled(DrawContext ctx, MinecraftClient c, int x, int y, boolean preview) {
+            double s = scale();
+            if (s == 1.0) {
+                draw(ctx, c, x, y, preview);
+                return;
+            }
+            var m = ctx.getMatrices();
+            m.pushMatrix();
+            m.translate((float) x, (float) y);
+            m.scale((float) s, (float) s);
+            draw(ctx, c, 0, 0, preview);
+            m.popMatrix();
+        }
+
+        public void drawPreview(DrawContext ctx, MinecraftClient c, int x, int y) { drawScaled(ctx, c, x, y, true); }
     }
 
     private static ItemStack damaged(net.minecraft.item.Item item, int damage) {
@@ -168,7 +188,13 @@ public final class Hud {
 
         void draw(DrawContext ctx, MinecraftClient c, int x, int y, boolean preview) {
             ItemStack s = stack(c, preview);
-            if (!s.isEmpty()) drawItemRow(ctx, c, s, x, y);
+            if (s.isEmpty()) return;
+            // outil : durabilité restante ; sinon : nombre TOTAL dans l'inventaire (shulkers compris)
+            String text;
+            if (s.isDamageable()) text = String.valueOf(s.getMaxDamage() - s.getDamage());
+            else text = String.valueOf(preview && c.player == null ? s.getCount() : PrismFeatures.countInInventory(c.player, s));
+            ctx.drawItem(s, x, y);
+            ctx.drawTextWithShadow(c.textRenderer, text, x + 22, y + 5, durabilityColor(s));
         }
     }
 
@@ -201,7 +227,7 @@ public final class Hud {
             final Element el = e;
             if (!Config.enabled(el.toggleKey)) continue;
             PrismFeatures.safe("affichage-" + el.id, () -> {
-                if (el.hasContent(c)) el.draw(ctx, c, el.x(w, c, false), el.y(h, c, false), false);
+                if (el.hasContent(c)) el.drawScaled(ctx, c, el.x(w, c, false), el.y(h, c, false), false);
             });
         }
     }

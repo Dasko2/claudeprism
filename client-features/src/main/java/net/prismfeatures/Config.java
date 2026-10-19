@@ -104,6 +104,16 @@ public final class Config {
         if (save) persist();
     }
 
+    /** Échelle d'affichage d'un élément (1.0 par défaut). */
+    public static double scale(String id) {
+        return user.has("pos." + id + ".s") ? user.get("pos." + id + ".s").getAsDouble() : 1.0;
+    }
+
+    public static void setScale(String id, double s) {
+        user.addProperty("pos." + id + ".s", Math.max(0.5, Math.min(3.0, Math.round(s * 10) / 10.0)));
+        persist();
+    }
+
     public static void resetPositions() {
         for (String k : new java.util.ArrayList<>(user.keySet())) if (k.startsWith("pos.")) user.remove(k);
         persist();

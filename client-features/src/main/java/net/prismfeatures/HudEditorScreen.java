@@ -11,6 +11,7 @@ import org.lwjgl.glfw.GLFW;
 public class HudEditorScreen extends Screen {
     private final Screen parent;
     private Hud.Element dragging = null;
+    private Hud.Element selected = Hud.ELEMENTS.get(0);
     private int grabDx = 0;
     private int grabDy = 0;
     private boolean wasDown = false;
@@ -22,17 +23,24 @@ public class HudEditorScreen extends Screen {
 
     @Override
     protected void init() {
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Terminé"), b -> this.close())
-                .dimensions(this.width / 2 - 104, this.height - 28, 100, 20).build());
+        final int bw = 90;
+        final int y = this.height - 28;
+        final int x0 = this.width / 2 - (4 * bw + 3 * 4) / 2;
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Taille -"), b -> Config.setScale(selected.id, selected.scale() - 0.1))
+                .dimensions(x0, y, bw, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Taille +"), b -> Config.setScale(selected.id, selected.scale() + 0.1))
+                .dimensions(x0 + (bw + 4), y, bw, 20).build());
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Réinitialiser"), b -> Config.resetPositions())
-                .dimensions(this.width / 2 + 4, this.height - 28, 100, 20).build());
+                .dimensions(x0 + 2 * (bw + 4), y, bw, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Terminé"), b -> this.close())
+                .dimensions(x0 + 3 * (bw + 4), y, bw, 20).build());
     }
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
         super.render(ctx, mouseX, mouseY, delta);
         MinecraftClient c = MinecraftClient.getInstance();
-        ctx.drawCenteredTextWithShadow(this.textRenderer, Text.literal("Glissez chaque élément avec la souris à l'endroit voulu"), this.width / 2, 12, 0xFFFFFFFF);
+        ctx.drawCenteredTextWithShadow(this.textRenderer, Text.literal("Glissez chaque élément à la souris. Taille -/+ agit sur l'élément sélectionné : " + selected.label + " (x" + String.format("%.1f", selected.scale()) + ")"), this.width / 2, 12, 0xFFFFFFFF);
 
         // état de la souris (sans dépendre de la signature des événements de souris)
         boolean down = GLFW.glfwGetMouseButton(c.getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
@@ -42,6 +50,7 @@ public class HudEditorScreen extends Screen {
                 int y = e.y(this.height, c, true);
                 if (mouseX >= x - 2 && mouseX <= x + e.w(c) + 2 && mouseY >= y - 2 && mouseY <= y + e.h(c) + 2) {
                     dragging = e; // le dernier de la liste est « au-dessus »
+                    selected = e;
                     grabDx = mouseX - x;
                     grabDy = mouseY - y;
                 }
@@ -66,7 +75,7 @@ public class HudEditorScreen extends Screen {
             int y = e.y(this.height, c, true);
             int w = e.w(c);
             int h = e.h(c);
-            boolean active = e == dragging;
+            boolean active = e == selected;
             int color = active ? 0xFF7C5CFF : 0x887C5CFF;
             ctx.fill(x - 3, y - 3, x + w + 3, y + h + 3, active ? 0x557C5CFF : 0x33000000);
             ctx.fill(x - 3, y - 3, x + w + 3, y - 2, color);
