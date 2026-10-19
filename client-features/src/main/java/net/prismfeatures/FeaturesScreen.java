@@ -51,8 +51,11 @@ public class FeaturesScreen extends Screen {
         index = addKeyButton("zoom", "Touche zoom", PrismFeatures.DEFAULT_KEY_ZOOM, index, left, right, top, w, h, gap);
         index = addKeyButton("menu", "Touche du menu", PrismFeatures.DEFAULT_KEY_MENU, index, left, right, top, w, h, gap);
 
+        final int below = top + rows * (h + gap) + 6;
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Placer les éléments à l'écran"),
+                btn -> this.client.setScreen(new HudEditorScreen(this))).dimensions(this.width / 2 - 100, below, 200, h).build());
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Terminé"), btn -> this.close())
-                .dimensions(this.width / 2 - 100, top + rows * (h + gap) + 8, 200, h).build());
+                .dimensions(this.width / 2 - 100, below + h + gap, 200, h).build());
 
         PrismFeatures.onBindingChanged = () -> refreshers.forEach(Runnable::run);
     }

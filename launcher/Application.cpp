@@ -924,9 +924,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("FeaturesEnabled", true);
         m_settings->registerSetting("FeatureNightVision", true);
         m_settings->registerSetting("FeatureShulkerPreview", true);
-        m_settings->registerSetting("FeatureChestPreview", true);
         m_settings->registerSetting("FeatureHud", true);
-        m_settings->registerSetting("FeatureMinimap", true);
 
         // Custom Technic Client ID
         m_settings->registerSetting("TechnicClientID", "");
