@@ -1,17 +1,9 @@
 #!/bin/sh
-# Construit le jar unique prismfeatures.jar (agent + toutes les charges utiles).
-# Prérequis : JDK 21 et Gradle 8.8+.
+# Construit le payload d'une version : sh build-all.sh <mc> <yarn> <compat>
+# (sans argument : 1.21.11). Le jar est copié dans agent/src/main/resources/payloads/.
 set -e
 cd "$(dirname "$0")"
-
-# 1) charges utiles : une par loader / version de Minecraft
+MC=${1:-1.21.11}; YARN=${2:-1.21.11+build.6}; COMPAT=${3:-new}
 mkdir -p agent/src/main/resources/payloads
-gradle build
-cp build/libs/prismfeatures-fabric-*.jar agent/src/main/resources/payloads/fabric-1.21.11.jar
-# (ajouter ici d'autres payloads : fabric-1.20.1.jar, ... forge-1.20.1.jar, neoforge-1.21.1.jar)
-
-# 2) agent unique qui les embarque
-cd agent
-gradle jar
-echo "OK -> agent/build/libs/prismfeatures-1.0.0.jar"
-echo "Copier ce fichier dans <dossier de données du launcher>/features/prismfeatures.jar"
+gradle clean build -Pminecraft_version=$MC -Pyarn_mappings=$YARN -Pcompat=$COMPAT
+cp build/libs/prismfeatures-fabric-*.jar agent/src/main/resources/payloads/fabric-$MC.jar

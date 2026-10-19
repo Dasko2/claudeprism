@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+#include <QMap>
 #include "ClientFeatures.h"
 
 #include <QDebug>
@@ -40,11 +41,16 @@ static QString featuresDir()
 /// Extrait la charge utile embarquée (:/features/<loader>-<mc>.jar) et renvoie son chemin ; vide si absente.
 static QString extractPayload(const QString& loader, const QString& mc)
 {
+    // version du mod la plus proche : les versions intermédiaires utilisent le build compatible
+    static const QMap<QString, QString> alias = {
+        { "1.21", "1.21.1" },   { "1.21.2", "1.21.1" }, { "1.21.3", "1.21.1" },
+        { "1.21.6", "1.21.8" }, { "1.21.7", "1.21.8" }, { "1.21.9", "1.21.10" },
+    };
+    const QString resolved = alias.value(mc, mc);
     QStringList names;
-    names << QString("%1-%2.jar").arg(loader, mc);
-    const auto parts = mc.split('.');
-    if (parts.size() >= 2)
-        names << QString("%1-%2.%3.jar").arg(loader, parts[0], parts[1]);
+    names << QString("%1-%2.jar").arg(loader, resolved);
+    if (resolved != mc)
+        names << QString("%1-%2.jar").arg(loader, mc);
 
     for (const QString& name : names) {
         QFile embedded(":/features/" + name);
@@ -110,7 +116,7 @@ QString statusText(MinecraftInstance* instance)
         return QString("loader %1 pas encore pris en charge").arg(loader);
     const QString payload = extractPayload(loader, mc);
     if (payload.isEmpty())
-        return QString("aucune charge utile pour %1 %2 (versions prises en charge : 1.21.11)").arg(loader, mc);
+        return QString("aucune charge utile pour %1 %2 (versions prises en charge : 1.21 à 1.21.11)").arg(loader, mc);
     return QString("OK : %1 %2, mod chargé depuis %3").arg(loader, mc, QFileInfo(payload).fileName());
 }
 

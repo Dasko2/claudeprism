@@ -17,5 +17,7 @@ processResources {
     filesMatching('fabric.mod.json') { expand 'version': project.version }
 }
 
+sourceSets.main.java.srcDir "src/compat/${project.compat}/java"
+
 tasks.withType(JavaCompile).configureEach { options.release = 21 }
 java { sourceCompatibility = JavaVersion.VERSION_21; targetCompatibility = JavaVersion.VERSION_21 }

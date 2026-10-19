@@ -80,7 +80,7 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     private static boolean keyDown(MinecraftClient client, int code) {
-        return InputUtil.isKeyPressed(client.getWindow(), code);
+        return Compat.keyPressed(client, code);
     }
 
     /** Vrai une seule fois à l'appui de la touche. */

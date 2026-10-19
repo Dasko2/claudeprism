@@ -59,12 +59,9 @@ public final class Hud {
                 draw(ctx, c, x, y, preview);
                 return;
             }
-            var m = ctx.getMatrices();
-            m.pushMatrix();
-            m.translate((float) x, (float) y);
-            m.scale((float) s, (float) s);
+            Compat.push(ctx, x, y, (float) s);
             draw(ctx, c, 0, 0, preview);
-            m.popMatrix();
+            Compat.pop(ctx);
         }
 
         public void drawPreview(DrawContext ctx, MinecraftClient c, int x, int y) { drawScaled(ctx, c, x, y, true); }

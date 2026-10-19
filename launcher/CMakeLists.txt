@@ -1221,7 +1221,8 @@ qt_add_resources(LAUNCHER_RESOURCES
 )
 
 # agent des fonctionnalités intégrées : embarqué dans l'exécutable s'il a été construit avant le launcher
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources/features/fabric-1.21.11.jar")
+file(GLOB FEATURE_PAYLOADS "${CMAKE_CURRENT_SOURCE_DIR}/resources/features/fabric-*.jar")
+if(FEATURE_PAYLOADS)
     qt_add_resources(LAUNCHER_FEATURES_RESOURCES resources/features/features.qrc)
     list(APPEND LAUNCHER_RESOURCES ${LAUNCHER_FEATURES_RESOURCES})
     add_compile_definitions(PRISM_EMBEDDED_AGENT=1)

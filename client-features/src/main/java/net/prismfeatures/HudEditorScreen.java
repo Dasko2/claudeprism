@@ -43,7 +43,7 @@ public class HudEditorScreen extends Screen {
         ctx.drawCenteredTextWithShadow(this.textRenderer, Text.literal("Glissez chaque élément à la souris. Taille -/+ agit sur l'élément sélectionné : " + selected.label + " (x" + String.format("%.1f", selected.scale()) + ")"), this.width / 2, 12, 0xFFFFFFFF);
 
         // état de la souris (sans dépendre de la signature des événements de souris)
-        boolean down = GLFW.glfwGetMouseButton(c.getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+        boolean down = GLFW.glfwGetMouseButton(Compat.handle(c), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
         if (down && !wasDown && mouseY < this.height - 36) {
             for (Hud.Element e : Hud.ELEMENTS) {
                 int x = e.x(this.width, c, true);
