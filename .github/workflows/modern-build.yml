@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { mc: '1.21.1',  yarn: '1.21.1+build.3',  compat: legacy }
+          - { mc: '1.21.1',  yarn: '1.21.1+build.3',  compat: v1211 }
           - { mc: '1.21.4',  yarn: '1.21.4+build.8',  compat: legacy }
           - { mc: '1.21.5',  yarn: '1.21.5+build.1',  compat: legacy }
           - { mc: '1.21.8',  yarn: '1.21.8+build.1',  compat: mid }

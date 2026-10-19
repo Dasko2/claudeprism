@@ -285,7 +285,7 @@ public class PrismFeatures implements ClientModInitializer {
             int ix = x + 4 + (i % cols) * 18;
             int iy = y + top + 4 + (i / cols) * 18;
             ctx.drawItem(items.get(i), ix, iy);
-            ctx.drawStackOverlay(client.textRenderer, items.get(i), ix, iy);
+            Compat.overlay(ctx, client, items.get(i), ix, iy);
         }
     }
 

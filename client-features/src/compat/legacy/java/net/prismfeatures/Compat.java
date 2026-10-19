@@ -16,4 +16,5 @@ final class Compat {
         m.scale(s, s, 1f);
     }
     static void pop(DrawContext ctx) { ctx.getMatrices().pop(); }
+    static void overlay(DrawContext ctx, MinecraftClient c, net.minecraft.item.ItemStack st, int x, int y) { ctx.drawStackOverlay(c.textRenderer, st, x, y); }
 }
