@@ -1,26 +1,26 @@
 package net.prismfeatures;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ShulkerBoxScreenHandler;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.ShulkerBoxMenu;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,12 +79,12 @@ public class PrismFeatures implements ClientModInitializer {
         }
     }
 
-    private static boolean keyDown(MinecraftClient client, int code) {
+    private static boolean keyDown(Minecraft client, int code) {
         return Compat.keyPressed(client, code);
     }
 
     /** Vrai une seule fois à l'appui de la touche. */
-    private static boolean pressed(MinecraftClient client, String id, int code) {
+    private static boolean pressed(Minecraft client, String id, int code) {
         boolean down = keyDown(client, code);
         boolean was = wasDown.getOrDefault(id, false);
         wasDown.put(id, down);
@@ -114,9 +114,9 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     // ------------------------------------------------------------------ tick
-    public static void onTick(MinecraftClient client) {
+    public static void onTick(Minecraft client) {
         safe("capture-touche", () -> captureKey(client));
-        if (client.player == null || client.world == null) {
+        if (client.player == null || client.level == null) {
             nightVisionOn = false;
             zoomActive = false;
             return;
@@ -126,13 +126,13 @@ public class PrismFeatures implements ClientModInitializer {
         safe("point-de-mort", () -> tickDeath(client));
         if (!keyDown(client, Config.key("shulkerOpen", DEFAULT_KEY_SHULKER))) shulkerLatch = false;
         safe("menu", () -> {
-            if (client.currentScreen == null && pressed(client, "menu", Config.key("menu", DEFAULT_KEY_MENU)))
+            if (client.screen == null && pressed(client, "menu", Config.key("menu", DEFAULT_KEY_MENU)))
                 client.setScreen(new FeaturesScreen());
         });
     }
 
     /** Menu : « appuyez sur une touche ». Échap annule. */
-    private static void captureKey(MinecraftClient client) {
+    private static void captureKey(Minecraft client) {
         if (listening == null) return;
         for (int code = GLFW.GLFW_KEY_SPACE; code <= GLFW.GLFW_KEY_LAST; code++) {
             if (!keyDown(client, code)) continue;
@@ -143,42 +143,42 @@ public class PrismFeatures implements ClientModInitializer {
         }
     }
 
-    private static void tickNightVision(MinecraftClient client) {
-        PlayerEntity p = client.player;
+    private static void tickNightVision(Minecraft client) {
+        Player p = client.player;
         boolean allowed = Config.enabled(Config.NIGHT_VISION);
-        if (client.currentScreen == null && listening == null && pressed(client, "nv", Config.key("nightVision", DEFAULT_KEY_NIGHT)) && allowed) {
+        if (client.screen == null && listening == null && pressed(client, "nv", Config.key("nightVision", DEFAULT_KEY_NIGHT)) && allowed) {
             nightVisionOn = !nightVisionOn;
-            p.sendMessage(Text.literal("Night vision : " + (nightVisionOn ? "activée" : "désactivée")), true);
-            if (!nightVisionOn) p.removeStatusEffect(StatusEffects.NIGHT_VISION);
+            p.displayClientMessage(Component.literal("Night vision : " + (nightVisionOn ? "activée" : "désactivée")), true);
+            if (!nightVisionOn) p.removeEffect(MobEffects.NIGHT_VISION);
         }
         if (!allowed && nightVisionOn) {
             nightVisionOn = false;
-            p.removeStatusEffect(StatusEffects.NIGHT_VISION);
+            p.removeEffect(MobEffects.NIGHT_VISION);
         }
-        if (nightVisionOn && !p.hasStatusEffect(StatusEffects.NIGHT_VISION)) {
+        if (nightVisionOn && !p.hasEffect(MobEffects.NIGHT_VISION)) {
             // effet purement local, infini, sans particules ni icône
-            p.addStatusEffect(new StatusEffectInstance(StatusEffects.NIGHT_VISION, StatusEffectInstance.INFINITE, 0, false, false, false));
+            p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, MobEffectInstance.INFINITE_DURATION, 0, false, false, false));
         }
     }
 
-    private static void tickZoom(MinecraftClient client) {
-        boolean want = Config.enabled(Config.ZOOM) && client.currentScreen == null && listening == null
+    private static void tickZoom(Minecraft client) {
+        boolean want = Config.enabled(Config.ZOOM) && client.screen == null && listening == null
                 && keyDown(client, Config.key("zoom", DEFAULT_KEY_ZOOM));
         if (want && !zoomActive) {
-            savedFov = client.options.getFov().getValue();
-            client.options.getFov().setValue(30);
+            savedFov = client.options.fov().get();
+            client.options.fov().set(30);
             zoomActive = true;
         } else if (!want && zoomActive) {
-            client.options.getFov().setValue(savedFov);
+            client.options.fov().set(savedFov);
             zoomActive = false;
         }
     }
 
     /** Mémorise le lieu de la dernière mort (affiché à l'écran, jamais dans le chat). */
-    private static void tickDeath(MinecraftClient client) {
-        PlayerEntity p = client.player;
+    private static void tickDeath(Minecraft client) {
+        Player p = client.player;
         boolean dead = p.getHealth() <= 0.0f;
-        if (dead && !wasDead) lastDeath = p.getBlockPos();
+        if (dead && !wasDead) lastDeath = p.blockPosition();
         wasDead = dead;
     }
 
@@ -188,17 +188,17 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     /** Nombre total d'un objet dans l'inventaire, y compris le contenu des shulkers qui s'y trouvent. */
-    public static int countInInventory(PlayerEntity p, ItemStack ref) {
+    public static int countInInventory(Player p, ItemStack ref) {
         if (p == null || ref.isEmpty()) return ref.getCount();
         int total = 0;
-        for (int i = 0; i < p.getInventory().size(); i++) {
-            ItemStack s = p.getInventory().getStack(i);
+        for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
+            ItemStack s = p.getInventory().getItem(i);
             if (s.isEmpty()) continue;
-            if (s.isOf(ref.getItem())) total += s.getCount();
+            if (s.is(ref.getItem())) total += s.getCount();
             if (isShulker(s)) {
-                ContainerComponent c = s.get(DataComponentTypes.CONTAINER);
+                ItemContainerContents c = s.get(DataComponents.CONTAINER);
                 if (c != null) {
-                    total += c.streamNonEmpty().filter(inner -> inner.isOf(ref.getItem())).mapToInt(ItemStack::getCount).sum();
+                    total += c.nonEmptyStream().filter(inner -> inner.is(ref.getItem())).mapToInt(ItemStack::getCount).sum();
                 }
             }
         }
@@ -206,70 +206,70 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     /** Solo uniquement : ouvre le contenu d'un shulker depuis l'inventaire, sans le poser. */
-    private static void openShulker(MinecraftClient client, int slotId) {
-        MinecraftServer server = client.getServer();
+    private static void openShulker(Minecraft client, int slotId) {
+        MinecraftServer server = client.getSingleplayerServer();
         if (server == null) {
-            client.player.sendMessage(Text.literal("Ouvrir un shulker depuis l'inventaire : solo uniquement"), true);
+            client.player.displayClientMessage(Component.literal("Ouvrir un shulker depuis l'inventaire : solo uniquement"), true);
             return;
         }
-        final UUID id = client.player.getUuid();
+        final UUID id = client.player.getUUID();
         server.execute(() -> {
-            ServerPlayerEntity sp = server.getPlayerManager().getPlayer(id);
+            ServerPlayer sp = server.getPlayerList().getPlayer(id);
             if (sp == null) return;
-            final ItemStack target = sp.currentScreenHandler.getSlot(slotId).getStack();
+            final ItemStack target = sp.containerMenu.getSlot(slotId).getItem();
             if (!isShulker(target)) return;
-            final SimpleInventory inv = new SimpleInventory(27);
-            ContainerComponent comp = target.get(DataComponentTypes.CONTAINER);
+            final SimpleContainer inv = new SimpleContainer(27);
+            ItemContainerContents comp = target.get(DataComponents.CONTAINER);
             if (comp != null) {
-                DefaultedList<ItemStack> tmp = DefaultedList.ofSize(27, ItemStack.EMPTY);
-                comp.copyTo(tmp);
-                for (int i = 0; i < 27; i++) inv.setStack(i, tmp.get(i));
+                NonNullList<ItemStack> tmp = NonNullList.withSize(27, ItemStack.EMPTY);
+                comp.copyInto(tmp);
+                for (int i = 0; i < 27; i++) inv.setItem(i, tmp.get(i));
             }
-            sp.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, playerInv, player) ->
-                    new ShulkerBoxScreenHandler(syncId, playerInv, inv) {
+            sp.openMenu(new SimpleMenuProvider((syncId, playerInv, player) ->
+                    new ShulkerBoxMenu(syncId, playerInv, inv) {
                         @Override
-                        public void onClosed(PlayerEntity pl) {
-                            super.onClosed(pl);
+                        public void removed(Player pl) {
+                            super.removed(pl);
                             List<ItemStack> out = new ArrayList<>();
-                            for (int i = 0; i < 27; i++) out.add(inv.getStack(i).copy());
-                            target.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(out));
+                            for (int i = 0; i < 27; i++) out.add(inv.getItem(i).copy());
+                            target.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(out));
                         }
-                    }, target.getName()));
+                    }, target.getHoverName()));
         });
     }
 
     /** Survol d'un shulker dans un inventaire : son contenu s'affiche en grille ; la touche (V) l'ouvre en solo. */
-    public static void onSlotHover(DrawContext ctx, Slot slot, int mouseX, int mouseY) {
-        ItemStack stack = slot.getStack();
+    public static void onSlotHover(GuiGraphics ctx, Slot slot, int mouseX, int mouseY) {
+        ItemStack stack = slot.getItem();
         if (!isShulker(stack)) return;
         safe("shulker-ouvrir", () -> {
-            MinecraftClient client = MinecraftClient.getInstance();
+            Minecraft client = Minecraft.getInstance();
             if (keyDown(client, Config.key("shulkerOpen", DEFAULT_KEY_SHULKER)) && !shulkerLatch) {
                 shulkerLatch = true;
-                openShulker(client, slot.id);
+                openShulker(client, slot.index);
             }
         });
         onShulkerHover(ctx, stack, mouseX, mouseY);
     }
 
     /** Aperçu du contenu en grille à côté du curseur. */
-    public static void onShulkerHover(DrawContext ctx, ItemStack stack, int mouseX, int mouseY) {
+    public static void onShulkerHover(GuiGraphics ctx, ItemStack stack, int mouseX, int mouseY) {
         if (!Config.enabled(Config.SHULKER)) return;
         safe("shulker", () -> {
             if (!isShulker(stack)) return;
-            ContainerComponent container = stack.get(DataComponentTypes.CONTAINER);
+            ItemContainerContents container = stack.get(DataComponents.CONTAINER);
             if (container == null) return;
             List<ItemStack> items = new ArrayList<>();
-            container.streamNonEmpty().forEach(items::add);
-            MinecraftClient client = MinecraftClient.getInstance();
-            int x = Math.min(mouseX + 12, ctx.getScaledWindowWidth() - 9 * 18 - 10);
-            int y = Math.min(mouseY + 44, ctx.getScaledWindowHeight() - 4 * 18 - 30);
+            container.nonEmptyStream().forEach(items::add);
+            Minecraft client = Minecraft.getInstance();
+            int x = Math.min(mouseX + 12, ctx.guiWidth() - 9 * 18 - 10);
+            int y = Math.min(mouseY + 44, ctx.guiHeight() - 4 * 18 - 30);
             drawGrid(ctx, client, items, x, y, items.isEmpty() ? "Shulker vide" : "Contenu du shulker");
         });
     }
 
     /** Petit panneau avec les objets en grille de 9 colonnes (icônes + quantités). */
-    private static void drawGrid(DrawContext ctx, MinecraftClient client, List<ItemStack> items, int x, int y, String title) {
+    private static void drawGrid(GuiGraphics ctx, Minecraft client, List<ItemStack> items, int x, int y, String title) {
         int cols = 9;
         int rows = Math.max(1, (items.size() + cols - 1) / cols);
         int top = 14;
@@ -280,19 +280,19 @@ public class PrismFeatures implements ClientModInitializer {
         ctx.fill(x, y + h - 1, x + w, y + h, 0xFF7C5CFF);
         ctx.fill(x, y, x + 1, y + h, 0xFF7C5CFF);
         ctx.fill(x + w - 1, y, x + w, y + h, 0xFF7C5CFF);
-        ctx.drawTextWithShadow(client.textRenderer, title, x + 5, y + 4, 0xFFFFFFFF);
+        ctx.drawString(client.font, title, x + 5, y + 4, 0xFFFFFFFF);
         for (int i = 0; i < items.size(); i++) {
             int ix = x + 4 + (i % cols) * 18;
             int iy = y + top + 4 + (i / cols) * 18;
-            ctx.drawItem(items.get(i), ix, iy);
+            ctx.renderItem(items.get(i), ix, iy);
             Compat.overlay(ctx, client, items.get(i), ix, iy);
         }
     }
 
     // ------------------------------------------------------------------ HUD
-    public static void onHud(DrawContext ctx) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null || client.world == null || client.options.hudHidden) return;
+    public static void onHud(GuiGraphics ctx) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || client.level == null || client.options.hideGui) return;
         Hud.render(ctx, client);
     }
 }

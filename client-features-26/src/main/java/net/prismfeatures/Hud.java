@@ -1,12 +1,12 @@
 package net.prismfeatures;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.BlockPos;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -32,28 +32,28 @@ public final class Hud {
             this.defY = defY;
         }
 
-        abstract int width(MinecraftClient c, boolean preview);
-        abstract int height(MinecraftClient c, boolean preview);
-        abstract void draw(DrawContext ctx, MinecraftClient c, int x, int y, boolean preview);
-        abstract boolean hasContent(MinecraftClient c);
+        abstract int width(Minecraft c, boolean preview);
+        abstract int height(Minecraft c, boolean preview);
+        abstract void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview);
+        abstract boolean hasContent(Minecraft c);
 
         public double scale() { return Config.scale(id); }
-        int sw(MinecraftClient c, boolean preview) { return (int) Math.ceil(width(c, preview) * scale()); }
-        int sh(MinecraftClient c, boolean preview) { return (int) Math.ceil(height(c, preview) * scale()); }
+        int sw(Minecraft c, boolean preview) { return (int) Math.ceil(width(c, preview) * scale()); }
+        int sh(Minecraft c, boolean preview) { return (int) Math.ceil(height(c, preview) * scale()); }
 
-        public int x(int screenW, MinecraftClient c, boolean preview) {
+        public int x(int screenW, Minecraft c, boolean preview) {
             return (int) Math.round(Config.pos(id, defX, defY)[0] * Math.max(0, screenW - sw(c, preview)));
         }
 
-        public int y(int screenH, MinecraftClient c, boolean preview) {
+        public int y(int screenH, Minecraft c, boolean preview) {
             return (int) Math.round(Config.pos(id, defX, defY)[1] * Math.max(0, screenH - sh(c, preview)));
         }
 
-        public int w(MinecraftClient c) { return sw(c, true); }
-        public int h(MinecraftClient c) { return sh(c, true); }
+        public int w(Minecraft c) { return sw(c, true); }
+        public int h(Minecraft c) { return sh(c, true); }
 
         /** Dessine l'élément à sa taille choisie (échelle). */
-        public void drawScaled(DrawContext ctx, MinecraftClient c, int x, int y, boolean preview) {
+        public void drawScaled(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
             double s = scale();
             if (s == 1.0) {
                 draw(ctx, c, x, y, preview);
@@ -64,18 +64,18 @@ public final class Hud {
             Compat.pop(ctx);
         }
 
-        public void drawPreview(DrawContext ctx, MinecraftClient c, int x, int y) { drawScaled(ctx, c, x, y, true); }
+        public void drawPreview(GuiGraphics ctx, Minecraft c, int x, int y) { drawScaled(ctx, c, x, y, true); }
     }
 
-    private static ItemStack damaged(net.minecraft.item.Item item, int damage) {
+    private static ItemStack damaged(net.minecraft.world.item.Item item, int damage) {
         ItemStack s = new ItemStack(item);
-        s.setDamage(damage);
+        s.setDamageValue(damage);
         return s;
     }
 
     private static int durabilityColor(ItemStack s) {
-        if (!s.isDamageable()) return 0xFFFFFFFF;
-        float f = (float) (s.getMaxDamage() - s.getDamage()) / s.getMaxDamage();
+        if (!s.isDamageableItem()) return 0xFFFFFFFF;
+        float f = (float) (s.getMaxDamage() - s.getDamageValue()) / s.getMaxDamage();
         if (f > 0.5f) return 0xFF55FF55;
         if (f > 0.2f) return 0xFFFFAA00;
         return 0xFFFF5555;
@@ -83,51 +83,51 @@ public final class Hud {
 
     /** Durabilité restante pour un objet qui s'use, sinon la quantité. */
     private static String number(ItemStack s) {
-        return s.isDamageable() ? String.valueOf(s.getMaxDamage() - s.getDamage()) : String.valueOf(s.getCount());
+        return s.isDamageableItem() ? String.valueOf(s.getMaxDamage() - s.getDamageValue()) : String.valueOf(s.getCount());
     }
 
     /** Ligne « image de l'objet + nombre à côté ». */
-    private static void drawItemRow(DrawContext ctx, MinecraftClient c, ItemStack s, int x, int y) {
-        ctx.drawItem(s, x, y);
-        ctx.drawTextWithShadow(c.textRenderer, number(s), x + 22, y + 5, durabilityColor(s));
+    private static void drawItemRow(GuiGraphics ctx, Minecraft c, ItemStack s, int x, int y) {
+        ctx.renderItem(s, x, y);
+        ctx.drawString(c.font, number(s), x + 22, y + 5, durabilityColor(s));
     }
 
     // ---------------------------------------------------------------- infos
     private static final Element INFOS = new Element("infos", "Infos", Config.HUD, 0.0, 0.0) {
-        private List<String> lines(MinecraftClient c) {
-            PlayerEntity p = c.player;
+        private List<String> lines(Minecraft c) {
+            Player p = c.player;
             List<String> out = new ArrayList<>();
-            out.add(c.getCurrentFps() + " FPS");
-            if (p == null || c.world == null) return out;
-            BlockPos pos = p.getBlockPos();
-            String dir = switch (p.getHorizontalFacing()) {
+            out.add(c.getFps() + " FPS");
+            if (p == null || c.level == null) return out;
+            BlockPos pos = p.blockPosition();
+            String dir = switch (p.getDirection()) {
                 case NORTH -> "N";
                 case SOUTH -> "S";
                 case EAST -> "E";
                 default -> "O";
             };
             out.add("XYZ " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + "  " + dir);
-            out.add("Biome : " + c.world.getBiome(pos).getKey().map(k -> k.getValue().getPath().replace('_', ' ')).orElse("?"));
-            if (c.getNetworkHandler() != null && c.getServer() == null) {
-                var entry = c.getNetworkHandler().getPlayerListEntry(p.getUuid());
+            out.add("Biome : " + c.level.getBiome(pos).unwrapKey().map(k -> k.identifier().getPath().replace('_', ' ')).orElse("?"));
+            if (c.getConnection() != null && c.getServer() == null) {
+                var entry = c.getConnection().getPlayerInfo(p.getUUID());
                 if (entry != null) out.add("Ping : " + entry.getLatency() + " ms");
             }
             out.add("Heure : " + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
             return out;
         }
 
-        int width(MinecraftClient c, boolean preview) {
+        int width(Minecraft c, boolean preview) {
             int w = 40;
-            for (String l : lines(c)) w = Math.max(w, c.textRenderer.getWidth(l));
+            for (String l : lines(c)) w = Math.max(w, c.font.width(l));
             return w;
         }
 
-        int height(MinecraftClient c, boolean preview) { return lines(c).size() * 11; }
-        boolean hasContent(MinecraftClient c) { return true; }
+        int height(Minecraft c, boolean preview) { return lines(c).size() * 11; }
+        boolean hasContent(Minecraft c) { return true; }
 
-        void draw(DrawContext ctx, MinecraftClient c, int x, int y, boolean preview) {
+        void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
             for (String l : lines(c)) {
-                ctx.drawTextWithShadow(c.textRenderer, l, x, y, 0xFFFFFFFF);
+                ctx.drawString(c.font, l, x, y, 0xFFFFFFFF);
                 y += 11;
             }
         }
@@ -137,10 +137,10 @@ public final class Hud {
     private static final Element ARMOR = new Element("armor", "Armure", Config.ARMOR, 0.0, 0.45) {
         private final EquipmentSlot[] slots = { EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET };
 
-        private List<ItemStack> pieces(MinecraftClient c, boolean preview) {
+        private List<ItemStack> pieces(Minecraft c, boolean preview) {
             List<ItemStack> out = new ArrayList<>();
             for (EquipmentSlot slot : slots) {
-                ItemStack s = c.player == null ? ItemStack.EMPTY : c.player.getEquippedStack(slot);
+                ItemStack s = c.player == null ? ItemStack.EMPTY : c.player.getItemBySlot(slot);
                 if (!s.isEmpty()) out.add(s);
             }
             if (out.isEmpty() && preview) {
@@ -152,11 +152,11 @@ public final class Hud {
             return out;
         }
 
-        int width(MinecraftClient c, boolean preview) { return 22 + 36; }
-        int height(MinecraftClient c, boolean preview) { return Math.max(1, pieces(c, preview).size()) * 18; }
-        boolean hasContent(MinecraftClient c) { return !pieces(c, false).isEmpty(); }
+        int width(Minecraft c, boolean preview) { return 22 + 36; }
+        int height(Minecraft c, boolean preview) { return Math.max(1, pieces(c, preview).size()) * 18; }
+        boolean hasContent(Minecraft c) { return !pieces(c, false).isEmpty(); }
 
-        void draw(DrawContext ctx, MinecraftClient c, int x, int y, boolean preview) {
+        void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
             for (ItemStack s : pieces(c, preview)) {
                 drawItemRow(ctx, c, s, x, y);
                 y += 18;
@@ -173,25 +173,25 @@ public final class Hud {
             this.off = off;
         }
 
-        private ItemStack stack(MinecraftClient c, boolean preview) {
-            ItemStack s = c.player == null ? ItemStack.EMPTY : (off ? c.player.getOffHandStack() : c.player.getMainHandStack());
+        private ItemStack stack(Minecraft c, boolean preview) {
+            ItemStack s = c.player == null ? ItemStack.EMPTY : (off ? c.player.getOffhandItem() : c.player.getMainHandItem());
             if (s.isEmpty() && preview) return off ? new ItemStack(Items.SHIELD) : damaged(Items.DIAMOND_PICKAXE, 250);
             return s;
         }
 
-        int width(MinecraftClient c, boolean preview) { return 22 + 36; }
-        int height(MinecraftClient c, boolean preview) { return 18; }
-        boolean hasContent(MinecraftClient c) { return !stack(c, false).isEmpty(); }
+        int width(Minecraft c, boolean preview) { return 22 + 36; }
+        int height(Minecraft c, boolean preview) { return 18; }
+        boolean hasContent(Minecraft c) { return !stack(c, false).isEmpty(); }
 
-        void draw(DrawContext ctx, MinecraftClient c, int x, int y, boolean preview) {
+        void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
             ItemStack s = stack(c, preview);
             if (s.isEmpty()) return;
             // outil : durabilité restante ; sinon : nombre TOTAL dans l'inventaire (shulkers compris)
             String text;
-            if (s.isDamageable()) text = String.valueOf(s.getMaxDamage() - s.getDamage());
+            if (s.isDamageableItem()) text = String.valueOf(s.getMaxDamage() - s.getDamageValue());
             else text = String.valueOf(preview && c.player == null ? s.getCount() : PrismFeatures.countInInventory(c.player, s));
-            ctx.drawItem(s, x, y);
-            ctx.drawTextWithShadow(c.textRenderer, text, x + 22, y + 5, durabilityColor(s));
+            ctx.renderItem(s, x, y);
+            ctx.drawString(c.font, text, x + 22, y + 5, durabilityColor(s));
         }
     }
 
@@ -205,21 +205,21 @@ public final class Hud {
             return d == null ? "Mort : 120 64 -300" : "Mort : " + d.getX() + " " + d.getY() + " " + d.getZ();
         }
 
-        int width(MinecraftClient c, boolean preview) { return c.textRenderer.getWidth(text()); }
-        int height(MinecraftClient c, boolean preview) { return 10; }
-        boolean hasContent(MinecraftClient c) { return PrismFeatures.lastDeath != null; }
+        int width(Minecraft c, boolean preview) { return c.font.width(text()); }
+        int height(Minecraft c, boolean preview) { return 10; }
+        boolean hasContent(Minecraft c) { return PrismFeatures.lastDeath != null; }
 
-        void draw(DrawContext ctx, MinecraftClient c, int x, int y, boolean preview) {
-            ctx.drawTextWithShadow(c.textRenderer, text(), x, y, 0xFFFF5555);
+        void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
+            ctx.drawString(c.font, text(), x, y, 0xFFFF5555);
         }
     };
 
     public static final List<Element> ELEMENTS = List.of(INFOS, ARMOR, MAIN, OFF, DEATH);
 
     /** Affichage en jeu. */
-    public static void render(DrawContext ctx, MinecraftClient c) {
-        int w = ctx.getScaledWindowWidth();
-        int h = ctx.getScaledWindowHeight();
+    public static void render(GuiGraphics ctx, Minecraft c) {
+        int w = ctx.guiWidth();
+        int h = ctx.guiHeight();
         for (Element e : ELEMENTS) {
             final Element el = e;
             if (!Config.enabled(el.toggleKey)) continue;

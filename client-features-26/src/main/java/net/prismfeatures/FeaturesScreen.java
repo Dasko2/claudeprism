@@ -1,9 +1,9 @@
 package net.prismfeatures;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class FeaturesScreen extends Screen {
     }
 
     public FeaturesScreen(Screen parent) {
-        super(Text.literal("Menu de config"));
+        super(Component.literal("Menu de config"));
         this.parent = parent;
     }
 
@@ -38,12 +38,12 @@ public class FeaturesScreen extends Screen {
 
         for (Map.Entry<String, String> e : Config.LABELS.entrySet()) {
             final String key = e.getKey();
-            ButtonWidget b = ButtonWidget.builder(label(key), btn -> {
+            Button b = Button.builder(label(key), btn -> {
                 Config.toggle(key);
                 btn.setMessage(label(key));
-            }).dimensions(index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h).build();
+            }).bounds(index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h).build();
             b.active = Config.allowed(key);
-            this.addDrawableChild(b);
+            this.addRenderableWidget(b);
             index++;
         }
 
@@ -53,45 +53,45 @@ public class FeaturesScreen extends Screen {
         index = addKeyButton("menu", "Touche du menu", PrismFeatures.DEFAULT_KEY_MENU, index, left, right, top, w, h, gap);
 
         final int below = top + rows * (h + gap) + 6;
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Placer les éléments à l'écran"),
-                btn -> this.client.setScreen(new HudEditorScreen(this))).dimensions(this.width / 2 - 100, below, 200, h).build());
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Terminé"), btn -> this.close())
-                .dimensions(this.width / 2 - 100, below + h + gap, 200, h).build());
+        this.addRenderableWidget(Button.builder(Component.literal("Placer les éléments à l'écran"),
+                btn -> this.minecraft.setScreen(new HudEditorScreen(this))).bounds(this.width / 2 - 100, below, 200, h).build());
+        this.addRenderableWidget(Button.builder(Component.literal("Terminé"), btn -> this.onClose())
+                .bounds(this.width / 2 - 100, below + h + gap, 200, h).build());
 
         PrismFeatures.onBindingChanged = () -> refreshers.forEach(Runnable::run);
     }
 
     private int addKeyButton(String id, String name, int def, int index, int left, int right, int top, int w, int h, int gap) {
-        ButtonWidget b = ButtonWidget.builder(keyLabel(id, name, def), btn -> {
+        Button b = Button.builder(keyLabel(id, name, def), btn -> {
             PrismFeatures.listening = id;
             refreshers.forEach(Runnable::run);
-        }).dimensions(index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h).build();
+        }).bounds(index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h).build();
         refreshers.add(() -> b.setMessage(keyLabel(id, name, def)));
-        this.addDrawableChild(b);
+        this.addRenderableWidget(b);
         return index + 1;
     }
 
-    private static Text keyLabel(String id, String name, int def) {
-        if (id.equals(PrismFeatures.listening)) return Text.literal(name + " : appuyez sur une touche...");
-        return Text.literal(name + " : [" + PrismFeatures.keyName(Config.key(id, def)) + "]");
+    private static Component keyLabel(String id, String name, int def) {
+        if (id.equals(PrismFeatures.listening)) return Component.literal(name + " : appuyez sur une touche...");
+        return Component.literal(name + " : [" + PrismFeatures.keyName(Config.key(id, def)) + "]");
     }
 
-    private static Text label(String key) {
+    private static Component label(String key) {
         String name = Config.LABELS.get(key);
-        if (!Config.allowed(key)) return Text.literal(name + " : désactivé dans le launcher");
-        return Text.literal(name + " : " + (Config.enabled(key) ? "ON" : "OFF"));
+        if (!Config.allowed(key)) return Component.literal(name + " : désactivé dans le launcher");
+        return Component.literal(name + " : " + (Config.enabled(key) ? "ON" : "OFF"));
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 14, 0xFFFFFFFF);
+        context.drawCenteredString(this.font, this.title, this.width / 2, 14, 0xFFFFFFFF);
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         PrismFeatures.listening = null;
         PrismFeatures.onBindingChanged = null;
-        if (this.client != null) this.client.setScreen(parent);
+        if (this.minecraft != null) this.minecraft.setScreen(parent);
     }
 }
