@@ -166,7 +166,7 @@ jobs:
           merge-multiple: true
           path: payloads
       - name: Embarquer le mod dans l'exécutable
-        run: cp payloads/*.jar launcher/resources/features/
+        run: mkdir -p launcher/resources/features && cp payloads/*.jar launcher/resources/features/
       - name: Setup dependencies
         id: setup-dependencies
         uses: ./.github/actions/setup-dependencies
