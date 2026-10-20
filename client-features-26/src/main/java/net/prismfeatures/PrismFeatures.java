@@ -21,7 +21,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +37,16 @@ import java.util.UUID;
  * Chaque fonctionnalité est isolée : si l'une échoue, elle est coupée (et loguée) sans toucher aux autres.
  */
 public class PrismFeatures implements ClientModInitializer {
+    /** Codes de touches (valeurs GLFW), sans dépendre de LWJGL GLFW (absent des versions récentes). */
+    static final class GLFW {
+        static final int GLFW_KEY_SPACE = 32, GLFW_KEY_ESCAPE = 256, GLFW_KEY_ENTER = 257, GLFW_KEY_TAB = 258,
+            GLFW_KEY_RIGHT = 262, GLFW_KEY_LEFT = 263, GLFW_KEY_DOWN = 264, GLFW_KEY_UP = 265,
+            GLFW_KEY_F1 = 290, GLFW_KEY_F25 = 314, GLFW_KEY_LAST = 348,
+            GLFW_KEY_LEFT_SHIFT = 340, GLFW_KEY_LEFT_CONTROL = 341, GLFW_KEY_LEFT_ALT = 342,
+            GLFW_KEY_RIGHT_SHIFT = 344, GLFW_KEY_RIGHT_CONTROL = 345, GLFW_KEY_RIGHT_ALT = 346,
+            GLFW_KEY_N = 78, GLFW_KEY_C = 67, GLFW_KEY_V = 86;
+    }
+
     public static final Logger LOGGER = LoggerFactory.getLogger("prismfeatures");
 
     public static final int DEFAULT_KEY_NIGHT = GLFW.GLFW_KEY_N;
@@ -109,8 +118,8 @@ public class PrismFeatures implements ClientModInitializer {
             default:
         }
         if (code >= GLFW.GLFW_KEY_F1 && code <= GLFW.GLFW_KEY_F25) return "F" + (code - GLFW.GLFW_KEY_F1 + 1);
-        String n = GLFW.glfwGetKeyName(code, 0);
-        return n != null ? n.toUpperCase() : "Touche " + code;
+        String n = Compat.keyDisplay(code);
+        return n != null && !n.isEmpty() ? n.toUpperCase() : "Touche " + code;
     }
 
     // ------------------------------------------------------------------ tick
@@ -148,7 +157,7 @@ public class PrismFeatures implements ClientModInitializer {
         boolean allowed = Config.enabled(Config.NIGHT_VISION);
         if (Compat.screen(client) == null && listening == null && pressed(client, "nv", Config.key("nightVision", DEFAULT_KEY_NIGHT)) && allowed) {
             nightVisionOn = !nightVisionOn;
-            Compat.overlayMessage(client, Component.literal("Night vision : " + (nightVisionOn ? "activée" : "désactivée")), false);
+            Compat.overlayMessage(client, Component.literal("Night vision : " + (nightVisionOn ? "activée" : "désactivée")));
             if (!nightVisionOn) p.removeEffect(MobEffects.NIGHT_VISION);
         }
         if (!allowed && nightVisionOn) {

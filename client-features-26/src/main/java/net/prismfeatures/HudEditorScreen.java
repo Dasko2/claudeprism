@@ -5,7 +5,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
 
 /** Éditeur de placement : glisser chaque élément avec la souris où on veut. */
 public class HudEditorScreen extends Screen {
@@ -43,7 +42,7 @@ public class HudEditorScreen extends Screen {
         ctx.centeredText(this.font, Component.literal("Glissez chaque élément à la souris. Taille -/+ agit sur l'élément sélectionné : " + selected.label + " (x" + String.format("%.1f", selected.scale()) + ")"), this.width / 2, 12, 0xFFFFFFFF);
 
         // état de la souris (sans dépendre de la signature des événements de souris)
-        boolean down = GLFW.glfwGetMouseButton(Compat.handle(c), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+        boolean down = Compat.leftMouseDown(c);
         if (down && !wasDown && mouseY < this.height - 36) {
             for (Hud.Element e : Hud.ELEMENTS) {
                 int x = e.x(this.width, c, true);

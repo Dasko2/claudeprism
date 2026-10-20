@@ -10,7 +10,6 @@ import net.minecraft.world.item.ItemStack;
 /** Couche d'accès aux API de Minecraft 26.x (noms Mojang). */
 public final class Compat {
     private Compat() {}
-    public static long handle(Minecraft c) { return c.getWindow().handle(); }
     public static boolean keyPressed(Minecraft c, int code) { return InputConstants.isKeyDown(c.getWindow(), code); }
     public static void push(GuiGraphicsExtractor ctx, int x, int y, float s) {
         var m = ctx.pose();
@@ -24,4 +23,6 @@ public final class Compat {
     public static void setScreen(Minecraft c, Screen s) { c.gui.setScreen(s); }
     public static void overlayMessage(Minecraft c, Component m) { c.gui.hud.setOverlayMessage(m, false); }
     public static boolean hudHidden(Minecraft c) { return c.gui.hud.isHidden(); }
+    public static boolean leftMouseDown(Minecraft c) { return c.mouseHandler.isLeftPressed(); }
+    public static String keyDisplay(int code) { return InputConstants.Type.KEYSYM.getOrCreate(code).getDisplayName().getString(); }
 }
