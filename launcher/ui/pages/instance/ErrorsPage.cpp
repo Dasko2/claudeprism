@@ -29,8 +29,6 @@
 
 #include "DesktopServices.h"
 #include "MessageLevel.h"
-#include "minecraft/PackProfile.h"
-#include "ui/dialogs/AiHelpDialog.h"
 
 namespace {
 constexpr int kMaxCards = 80;
@@ -382,10 +380,6 @@ QWidget* ErrorsPage::createCard(const Entry& entry)
     auto* copy = new QToolButton(card);
     copy->setText(tr("Copier"));
     copy->setToolTip(tr("Copier cette erreur dans le presse-papiers"));
-    auto* ask = new QToolButton(card);
-    ask->setText(tr("Demander à l'IA"));
-    ask->setToolTip(tr("Une IA t'explique l'erreur et comment la résoudre"));
-    top->addWidget(ask);
     top->addWidget(copy);
     layout->addLayout(top);
 
@@ -397,19 +391,6 @@ QWidget* ErrorsPage::createCard(const Entry& entry)
 
     const QString fullText = entry.details.isEmpty() ? entry.title : entry.title + "\n" + entry.details;
     connect(copy, &QToolButton::clicked, card, [fullText] { QGuiApplication::clipboard()->setText(fullText); });
-    connect(ask, &QToolButton::clicked, card, [this, fullText] {
-        QString ctx = tr("Instance : %1").arg(m_instance->name());
-        if (auto* profile = m_instance->getPackProfile()) {
-            for (const auto& id : { "net.minecraft", "net.fabricmc.fabric-loader", "org.quiltmc.quilt-loader", "net.minecraftforge", "net.neoforged" }) {
-                const QString v = profile->getComponentVersion(id);
-                if (!v.isEmpty()) {
-                    ctx += QString("\n%1 : %2").arg(id, v);
-                }
-            }
-        }
-        AiHelpDialog dlg(fullText, ctx, this);
-        dlg.exec();
-    });
 
     if (!entry.details.isEmpty()) {
         auto* toggle = new QToolButton(card);

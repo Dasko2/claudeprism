@@ -1042,11 +1042,6 @@ SET(LAUNCHER_SOURCES
 
     # GUI - dialogs
     ui/dialogs/AboutDialog.cpp
-    ui/dialogs/AiConfig.h
-    ui/dialogs/AiHelpDialog.cpp
-    ui/dialogs/AiHelpDialog.h
-    ui/dialogs/AiModAssistant.cpp
-    ui/dialogs/AiModAssistant.h
     ui/dialogs/AboutDialog.h
     ui/dialogs/ProfileSelectDialog.cpp
     ui/dialogs/ProfileSelectDialog.h
@@ -1224,12 +1219,6 @@ qt_add_resources(LAUNCHER_RESOURCES
     resources/shaders/shaders.qrc
     "${CMAKE_CURRENT_BINARY_DIR}/../${Launcher_Branding_LogoQRC}"
 )
-
-# adresse du serveur intermédiaire de l'IA (définie par la CI via -DPRISM_AI_PROXY_URL=...)
-if(NOT DEFINED PRISM_AI_PROXY_URL)
-    set(PRISM_AI_PROXY_URL "")
-endif()
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/ai_proxy_url.h" "#define PRISM_AI_PROXY_URL \"${PRISM_AI_PROXY_URL}\"\n")
 
 # agent des fonctionnalités intégrées : embarqué dans l'exécutable s'il a été construit avant le launcher
 file(GLOB FEATURE_PAYLOADS "${CMAKE_CURRENT_SOURCE_DIR}/resources/features/fabric-*.jar")

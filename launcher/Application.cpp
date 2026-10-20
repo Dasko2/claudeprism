@@ -921,8 +921,6 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("FTBAppInstancesPath", "");
 
         // Fonctionnalités en jeu intégrées
-        m_settings->registerSetting("AiApiKey", "");
-        m_settings->registerSetting("AiProxyUrl", "");
         m_settings->registerSetting("FeaturesEnabled", true);
         m_settings->registerSetting("FeatureNightVision", true);
         m_settings->registerSetting("FeatureShulkerPreview", true);

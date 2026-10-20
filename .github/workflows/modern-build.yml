@@ -121,7 +121,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLauncher_QT_VERSION_MAJOR=6 "-DPRISM_AI_PROXY_URL=${{ vars.AI_PROXY_URL }}" > build.log 2>&1
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLauncher_QT_VERSION_MAJOR=6 > build.log 2>&1
           rc=$?
           if [ $rc -ne 0 ]; then
             tail -n 30 build.log | head -c 3500 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g' | sed 's/^/::error title=cmake-configure::/'
@@ -183,7 +183,7 @@ jobs:
       - name: Configurer
         run: |
           set +e
-          cmake --preset "$CMAKE_PRESET" -D "PRISM_AI_PROXY_URL=${{ vars.AI_PROXY_URL }}" -D VCPKG_HOST_TRIPLET="$VCPKG_TRIPLET" -D VCPKG_TARGET_TRIPLET="$VCPKG_TRIPLET" > build.log 2>&1
+          cmake --preset "$CMAKE_PRESET" -D VCPKG_HOST_TRIPLET="$VCPKG_TRIPLET" -D VCPKG_TARGET_TRIPLET="$VCPKG_TRIPLET" > build.log 2>&1
           rc=$?
           if [ $rc -ne 0 ]; then
             tail -n 40 build.log | head -c 3500 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g' | sed 's/^/::error title=win-configure::/'

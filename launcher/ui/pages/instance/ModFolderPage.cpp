@@ -38,7 +38,6 @@
 
 #include "ModFolderPage.h"
 #include "minecraft/mod/Resource.h"
-#include "ui/dialogs/AiModAssistant.h"
 #include "ui/dialogs/ExportToModListDialog.h"
 #include "ui/dialogs/InstallLoaderDialog.h"
 #include "ui_ExternalResourcesPage.h"
@@ -79,34 +78,6 @@ ModFolderPage::ModFolderPage(MinecraftInstance* inst, ModFolderModel* model, QWi
     m_ui->actionsToolbar->insertActionBefore(m_ui->actionAddItem, m_ui->actionDownloadItem);
 
     connect(m_ui->actionDownloadItem, &QAction::triggered, this, &ModFolderPage::downloadMods);
-
-    // Assistant IA : décrire les mods voulus, l'IA les propose et les installe après confirmation
-    auto* aiAction = new QAction(tr("Assistant IA"), this);
-    aiAction->setToolTip(tr("Décris les mods que tu veux : une IA les trouve, t'explique ce qu'ils font et les installe après ta confirmation"));
-    m_ui->actionsToolbar->insertActionBefore(m_ui->actionAddItem, aiAction);
-    connect(aiAction, &QAction::triggered, this, [this, inst] {
-        auto* profile = inst->getPackProfile();
-        QString loader;
-        if (profile) {
-            if (!profile->getComponentVersion("net.fabricmc.fabric-loader").isEmpty())
-                loader = "fabric";
-            else if (!profile->getComponentVersion("org.quiltmc.quilt-loader").isEmpty())
-                loader = "quilt";
-            else if (!profile->getComponentVersion("net.neoforged").isEmpty())
-                loader = "neoforge";
-            else if (!profile->getComponentVersion("net.minecraftforge").isEmpty())
-                loader = "forge";
-        }
-        const QString mc = profile ? profile->getComponentVersion("net.minecraft") : QString();
-        if (loader.isEmpty() || mc.isEmpty()) {
-            QMessageBox::information(this, tr("Assistant IA"),
-                                     tr("Cette instance n'a pas de loader de mods (Fabric, Quilt, Forge ou NeoForge). Ajoute-en un dans la page Versions."));
-            return;
-        }
-        AiModAssistant dlg(inst->name(), mc, loader, m_model->dir().absolutePath(), QDir(inst->instanceRoot()).filePath("ai-mods.json"),
-                           [this] { m_model->update(); }, this);
-        dlg.exec();
-    });
 
     m_ui->actionUpdateItem->setToolTip(tr("Try to check or update all selected mods (all mods if none are selected)"));
     connect(m_ui->actionUpdateItem, &QAction::triggered, this, [this] { updateMods(); });
