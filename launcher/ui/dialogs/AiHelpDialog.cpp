@@ -18,6 +18,7 @@
 #include <QUrl>
 #include <QVBoxLayout>
 
+#include "AiConfig.h"
 #include "Application.h"
 #include "settings/SettingsObject.h"
 
@@ -58,18 +59,20 @@ AiHelpDialog::AiHelpDialog(const QString& errorText, const QString& context, QWi
     m_question->setMaximumHeight(70);
     root->addWidget(m_question);
 
-    auto* keyLabel = new QLabel(tr("Clé API Anthropic (stockée seulement sur ton ordinateur, créée sur console.anthropic.com) :"), this);
-    root->addWidget(keyLabel);
-    m_keyEdit = new QLineEdit(this);
-    m_keyEdit->setEchoMode(QLineEdit::Password);
-    m_keyEdit->setText(APPLICATION->settings()->get("AiApiKey").toString());
-    m_keyEdit->setPlaceholderText("sk-ant-...");
-    root->addWidget(m_keyEdit);
+    if (aiProxyUrl().isEmpty()) {
+        auto* keyLabel = new QLabel(tr("Clé API Anthropic (stockée seulement sur ton ordinateur, créée sur console.anthropic.com) :"), this);
+        root->addWidget(keyLabel);
+        m_keyEdit = new QLineEdit(this);
+        m_keyEdit->setEchoMode(QLineEdit::Password);
+        m_keyEdit->setText(APPLICATION->settings()->get("AiApiKey").toString());
+        m_keyEdit->setPlaceholderText("sk-ant-...");
+        root->addWidget(m_keyEdit);
 
-    auto* keyLink = new QPushButton(tr("Obtenir une clé"), this);
-    keyLink->setFlat(true);
-    connect(keyLink, &QPushButton::clicked, this, [] { QDesktopServices::openUrl(QUrl("https://console.anthropic.com/settings/keys")); });
-    root->addWidget(keyLink, 0, Qt::AlignLeft);
+        auto* keyLink = new QPushButton(tr("Obtenir une clé"), this);
+        keyLink->setFlat(true);
+        connect(keyLink, &QPushButton::clicked, this, [] { QDesktopServices::openUrl(QUrl("https://console.anthropic.com/settings/keys")); });
+        root->addWidget(keyLink, 0, Qt::AlignLeft);
+    }
 
     m_sendButton = new QPushButton(tr("Demander de l'aide"), this);
     connect(m_sendButton, &QPushButton::clicked, this, &AiHelpDialog::send);
@@ -102,12 +105,16 @@ QString AiHelpDialog::redact(QString text)
 
 void AiHelpDialog::send()
 {
-    const QString key = m_keyEdit->text().trimmed();
-    if (key.isEmpty()) {
-        m_status->setText(tr("Entre d'abord une clé API."));
-        return;
+    const QString proxy = aiProxyUrl();
+    QString key;
+    if (proxy.isEmpty()) {
+        key = m_keyEdit->text().trimmed();
+        if (key.isEmpty()) {
+            m_status->setText(tr("Entre d'abord une clé API."));
+            return;
+        }
+        APPLICATION->settings()->set("AiApiKey", key);
     }
-    APPLICATION->settings()->set("AiApiKey", key);
 
     QString user = tr("Contexte :\n%1\n\nErreur :\n%2").arg(m_context, m_error);
     const QString q = m_question->toPlainText().trimmed();
@@ -116,15 +123,22 @@ void AiHelpDialog::send()
     }
 
     QJsonObject body;
-    body["model"] = "claude-haiku-5-5";
-    body["max_tokens"] = 1024;
-    body["system"] = QString::fromUtf8(kSystemPrompt);
+    if (proxy.isEmpty()) {
+        body["model"] = "claude-haiku-5-5";
+        body["max_tokens"] = 1024;
+        body["system"] = QString::fromUtf8(kSystemPrompt);
+    } else {
+        body["mode"] = "errors";
+        body["context"] = m_context;
+    }
     body["messages"] = QJsonArray{ QJsonObject{ { "role", "user" }, { "content", user } } };
 
-    QNetworkRequest req(QUrl("https://api.anthropic.com/v1/messages"));
+    QNetworkRequest req(QUrl(proxy.isEmpty() ? QStringLiteral("https://api.anthropic.com/v1/messages") : proxy));
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    req.setRawHeader("x-api-key", key.toUtf8());
-    req.setRawHeader("anthropic-version", "2023-06-01");
+    if (proxy.isEmpty()) {
+        req.setRawHeader("x-api-key", key.toUtf8());
+        req.setRawHeader("anthropic-version", "2023-06-01");
+    }
 
     m_sendButton->setEnabled(false);
     m_status->setText(tr("L'IA réfléchit…"));

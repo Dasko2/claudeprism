@@ -23,6 +23,7 @@
 #include <QUrlQuery>
 #include <QVBoxLayout>
 
+#include "AiConfig.h"
 #include "Application.h"
 #include "settings/SettingsObject.h"
 
@@ -82,17 +83,19 @@ AiModAssistant::AiModAssistant(const QString& instanceName,
     m_status = new QLabel(this);
     root->addWidget(m_status);
 
-    auto* keyRow = new QHBoxLayout();
-    keyRow->addWidget(new QLabel(tr("Clé API Anthropic :"), this));
-    m_keyEdit = new QLineEdit(this);
-    m_keyEdit->setEchoMode(QLineEdit::Password);
-    m_keyEdit->setPlaceholderText("sk-ant-...");
-    m_keyEdit->setText(APPLICATION->settings()->get("AiApiKey").toString());
-    keyRow->addWidget(m_keyEdit, 1);
-    auto* keyLink = new QPushButton(tr("Obtenir une clé"), this);
-    connect(keyLink, &QPushButton::clicked, this, [] { QDesktopServices::openUrl(QUrl("https://console.anthropic.com/settings/keys")); });
-    keyRow->addWidget(keyLink);
-    root->addLayout(keyRow);
+    if (aiProxyUrl().isEmpty()) {
+        auto* keyRow = new QHBoxLayout();
+        keyRow->addWidget(new QLabel(tr("Clé API Anthropic :"), this));
+        m_keyEdit = new QLineEdit(this);
+        m_keyEdit->setEchoMode(QLineEdit::Password);
+        m_keyEdit->setPlaceholderText("sk-ant-...");
+        m_keyEdit->setText(APPLICATION->settings()->get("AiApiKey").toString());
+        keyRow->addWidget(m_keyEdit, 1);
+        auto* keyLink = new QPushButton(tr("Obtenir une clé"), this);
+        connect(keyLink, &QPushButton::clicked, this, [] { QDesktopServices::openUrl(QUrl("https://console.anthropic.com/settings/keys")); });
+        keyRow->addWidget(keyLink);
+        root->addLayout(keyRow);
+    }
 
     auto* row = new QHBoxLayout();
     m_input = new QLineEdit(this);
@@ -407,18 +410,25 @@ QString AiModAssistant::runTool(const QString& name, const QJsonObject& input)
 
 QJsonObject AiModAssistant::callClaude()
 {
-    QJsonObject body{ { "model", "claude-sonnet-5-5" },
-                      { "max_tokens", 1500 },
-                      { "system", QString::fromUtf8(kSystemPrompt) +
-                                      QString("\n\nContexte : instance « %1 », Minecraft %2, loader %3.").arg(m_instance, m_mc, m_loader) },
-                      { "tools", tools() },
-                      { "messages", m_messages } };
+    const QString proxy = aiProxyUrl();
+    const QString context = QString("instance « %1 », Minecraft %2, loader %3.").arg(m_instance, m_mc, m_loader);
+    QJsonObject body;
+    QList<QPair<QByteArray, QByteArray>> headers{ { "content-type", "application/json" } };
+    QUrl endpoint(proxy);
+    if (proxy.isEmpty()) {
+        body = QJsonObject{ { "model", "claude-sonnet-5-5" },
+                            { "max_tokens", 1500 },
+                            { "system", QString::fromUtf8(kSystemPrompt) + "\n\nContexte : " + context },
+                            { "tools", tools() },
+                            { "messages", m_messages } };
+        endpoint = QUrl("https://api.anthropic.com/v1/messages");
+        headers << QPair<QByteArray, QByteArray>{ "x-api-key", m_keyEdit->text().trimmed().toUtf8() }
+                << QPair<QByteArray, QByteArray>{ "anthropic-version", "2023-06-01" };
+    } else {
+        body = QJsonObject{ { "mode", "mods" }, { "context", context }, { "messages", m_messages } };
+    }
     int status = 0;
-    const QByteArray raw = httpRequest(QUrl("https://api.anthropic.com/v1/messages"), QJsonDocument(body).toJson(QJsonDocument::Compact),
-                                       { { "x-api-key", m_keyEdit->text().trimmed().toUtf8() },
-                                         { "anthropic-version", "2023-06-01" },
-                                         { "content-type", "application/json" } },
-                                       &status);
+    const QByteArray raw = httpRequest(endpoint, QJsonDocument(body).toJson(QJsonDocument::Compact), headers, &status);
     QJsonObject obj = QJsonDocument::fromJson(raw).object();
     if (status != 200) {
         obj["__error"] = status == 401 ? QStringLiteral("Clé API refusée : vérifie-la.")
@@ -468,11 +478,13 @@ void AiModAssistant::sendUserMessage()
     if (m_busy || text.isEmpty()) {
         return;
     }
-    if (m_keyEdit->text().trimmed().isEmpty()) {
-        m_status->setText(tr("Entre d'abord une clé API."));
-        return;
+    if (aiProxyUrl().isEmpty()) {
+        if (m_keyEdit->text().trimmed().isEmpty()) {
+            m_status->setText(tr("Entre d'abord une clé API."));
+            return;
+        }
+        APPLICATION->settings()->set("AiApiKey", m_keyEdit->text().trimmed());
     }
-    APPLICATION->settings()->set("AiApiKey", m_keyEdit->text().trimmed());
     m_busy = true;
     m_send->setEnabled(false);
     m_input->clear();
