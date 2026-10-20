@@ -89,6 +89,6 @@ public class HudEditorScreen extends Screen {
 
     @Override
     public void onClose() {
-        if (this.minecraft != null) this.minecraft.setScreen(parent);
+        if (this.minecraft != null) Compat.setScreen(this.minecraft, parent);
     }
 }

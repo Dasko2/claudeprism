@@ -20,6 +20,6 @@ public abstract class GameMenuScreenMixin extends Screen {
     @Inject(method = "init", at = @At("TAIL"))
     private void prism$addConfigButton(CallbackInfo ci) {
         this.addRenderableWidget(Button.builder(Component.literal("Menu de config"),
-                b -> this.minecraft.setScreen(new FeaturesScreen(this))).bounds(6, 6, 110, 20).build());
+                b -> Compat.setScreen(this.minecraft, new FeaturesScreen(this))).bounds(6, 6, 110, 20).build());
     }
 }

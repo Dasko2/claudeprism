@@ -54,7 +54,7 @@ public class FeaturesScreen extends Screen {
 
         final int below = top + rows * (h + gap) + 6;
         this.addRenderableWidget(Button.builder(Component.literal("Placer les éléments à l'écran"),
-                btn -> this.minecraft.setScreen(new HudEditorScreen(this))).bounds(this.width / 2 - 100, below, 200, h).build());
+                btn -> Compat.setScreen(this.minecraft, new HudEditorScreen(this))).bounds(this.width / 2 - 100, below, 200, h).build());
         this.addRenderableWidget(Button.builder(Component.literal("Terminé"), btn -> this.onClose())
                 .bounds(this.width / 2 - 100, below + h + gap, 200, h).build());
 
@@ -92,6 +92,6 @@ public class FeaturesScreen extends Screen {
     public void onClose() {
         PrismFeatures.listening = null;
         PrismFeatures.onBindingChanged = null;
-        if (this.minecraft != null) this.minecraft.setScreen(parent);
+        if (this.minecraft != null) Compat.setScreen(this.minecraft, parent);
     }
 }

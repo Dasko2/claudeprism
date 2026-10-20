@@ -3,6 +3,8 @@ package net.prismfeatures;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 /** Couche d'accès aux API de Minecraft 26.x (noms Mojang). */
@@ -18,4 +20,8 @@ final class Compat {
     }
     static void pop(GuiGraphicsExtractor ctx) { ctx.pose().popMatrix(); }
     static void overlay(GuiGraphicsExtractor ctx, Minecraft c, ItemStack st, int x, int y) { ctx.itemDecorations(c.font, st, x, y); }
+    static Screen screen(Minecraft c) { return c.gui.screen(); }
+    static void setScreen(Minecraft c, Screen s) { c.gui.setScreen(s); }
+    static void overlayMessage(Minecraft c, Component m) { c.gui.hud.setOverlayMessage(m, false); }
+    static boolean hudHidden(Minecraft c) { return c.gui.hud.isHidden(); }
 }

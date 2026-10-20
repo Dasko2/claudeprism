@@ -126,8 +126,8 @@ public class PrismFeatures implements ClientModInitializer {
         safe("point-de-mort", () -> tickDeath(client));
         if (!keyDown(client, Config.key("shulkerOpen", DEFAULT_KEY_SHULKER))) shulkerLatch = false;
         safe("menu", () -> {
-            if (client.screen == null && pressed(client, "menu", Config.key("menu", DEFAULT_KEY_MENU)))
-                client.setScreen(new FeaturesScreen());
+            if (Compat.screen(client) == null && pressed(client, "menu", Config.key("menu", DEFAULT_KEY_MENU)))
+                Compat.setScreen(client, new FeaturesScreen());
         });
     }
 
@@ -146,9 +146,9 @@ public class PrismFeatures implements ClientModInitializer {
     private static void tickNightVision(Minecraft client) {
         Player p = client.player;
         boolean allowed = Config.enabled(Config.NIGHT_VISION);
-        if (client.screen == null && listening == null && pressed(client, "nv", Config.key("nightVision", DEFAULT_KEY_NIGHT)) && allowed) {
+        if (Compat.screen(client) == null && listening == null && pressed(client, "nv", Config.key("nightVision", DEFAULT_KEY_NIGHT)) && allowed) {
             nightVisionOn = !nightVisionOn;
-            client.gui.setOverlayMessage(Component.literal("Night vision : " + (nightVisionOn ? "activée" : "désactivée")), false);
+            Compat.overlayMessage(client, Component.literal("Night vision : " + (nightVisionOn ? "activée" : "désactivée")), false);
             if (!nightVisionOn) p.removeEffect(MobEffects.NIGHT_VISION);
         }
         if (!allowed && nightVisionOn) {
@@ -162,7 +162,7 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     private static void tickZoom(Minecraft client) {
-        boolean want = Config.enabled(Config.ZOOM) && client.screen == null && listening == null
+        boolean want = Config.enabled(Config.ZOOM) && Compat.screen(client) == null && listening == null
                 && keyDown(client, Config.key("zoom", DEFAULT_KEY_ZOOM));
         if (want && !zoomActive) {
             savedFov = client.options.fov().get();
@@ -209,7 +209,7 @@ public class PrismFeatures implements ClientModInitializer {
     private static void openShulker(Minecraft client, int slotId) {
         MinecraftServer server = client.getSingleplayerServer();
         if (server == null) {
-            client.gui.setOverlayMessage(Component.literal("Ouvrir un shulker depuis l'inventaire : solo uniquement"), false);
+            Compat.overlayMessage(client, Component.literal("Ouvrir un shulker depuis l'inventaire : solo uniquement"), false);
             return;
         }
         final UUID id = client.player.getUUID();
@@ -292,7 +292,7 @@ public class PrismFeatures implements ClientModInitializer {
     // ------------------------------------------------------------------ HUD
     public static void onHud(GuiGraphicsExtractor ctx) {
         Minecraft client = Minecraft.getInstance();
-        if (client.player == null || client.level == null || client.options.hideGui) return;
+        if (client.player == null || client.level == null || Compat.hudHidden(client)) return;
         Hud.render(ctx, client);
     }
 }
