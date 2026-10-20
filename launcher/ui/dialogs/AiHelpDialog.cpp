@@ -19,6 +19,7 @@
 #include <QVBoxLayout>
 
 #include "Application.h"
+#include "settings/SettingsObject.h"
 
 namespace {
 const char* kSystemPrompt =
