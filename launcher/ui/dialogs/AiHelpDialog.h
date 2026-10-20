@@ -31,7 +31,6 @@ class AiHelpDialog : public QDialog {
 
     QString m_error;
     QString m_context;
-    QLineEdit* m_keyEdit = nullptr;
     QPlainTextEdit* m_question = nullptr;
     QPushButton* m_sendButton = nullptr;
     QTextBrowser* m_answer = nullptr;

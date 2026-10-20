@@ -64,7 +64,6 @@ class AiModAssistant : public QDialog {
 
     QTextBrowser* m_chat = nullptr;
     QLineEdit* m_input = nullptr;
-    QLineEdit* m_keyEdit = nullptr;
     QPushButton* m_send = nullptr;
     QLabel* m_status = nullptr;
 };
