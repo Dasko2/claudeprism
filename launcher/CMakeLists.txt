@@ -1042,6 +1042,8 @@ SET(LAUNCHER_SOURCES
 
     # GUI - dialogs
     ui/dialogs/AboutDialog.cpp
+    ui/dialogs/AiHelpDialog.cpp
+    ui/dialogs/AiHelpDialog.h
     ui/dialogs/AboutDialog.h
     ui/dialogs/ProfileSelectDialog.cpp
     ui/dialogs/ProfileSelectDialog.h
