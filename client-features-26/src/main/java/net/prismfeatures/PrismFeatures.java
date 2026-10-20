@@ -3,7 +3,7 @@ package net.prismfeatures;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -239,7 +239,7 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     /** Survol d'un shulker dans un inventaire : son contenu s'affiche en grille ; la touche (V) l'ouvre en solo. */
-    public static void onSlotHover(GuiGraphics ctx, Slot slot, int mouseX, int mouseY) {
+    public static void onSlotHover(GuiGraphicsExtractor ctx, Slot slot, int mouseX, int mouseY) {
         ItemStack stack = slot.getItem();
         if (!isShulker(stack)) return;
         safe("shulker-ouvrir", () -> {
@@ -253,7 +253,7 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     /** Aperçu du contenu en grille à côté du curseur. */
-    public static void onShulkerHover(GuiGraphics ctx, ItemStack stack, int mouseX, int mouseY) {
+    public static void onShulkerHover(GuiGraphicsExtractor ctx, ItemStack stack, int mouseX, int mouseY) {
         if (!Config.enabled(Config.SHULKER)) return;
         safe("shulker", () -> {
             if (!isShulker(stack)) return;
@@ -269,7 +269,7 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     /** Petit panneau avec les objets en grille de 9 colonnes (icônes + quantités). */
-    private static void drawGrid(GuiGraphics ctx, Minecraft client, List<ItemStack> items, int x, int y, String title) {
+    private static void drawGrid(GuiGraphicsExtractor ctx, Minecraft client, List<ItemStack> items, int x, int y, String title) {
         int cols = 9;
         int rows = Math.max(1, (items.size() + cols - 1) / cols);
         int top = 14;
@@ -280,17 +280,17 @@ public class PrismFeatures implements ClientModInitializer {
         ctx.fill(x, y + h - 1, x + w, y + h, 0xFF7C5CFF);
         ctx.fill(x, y, x + 1, y + h, 0xFF7C5CFF);
         ctx.fill(x + w - 1, y, x + w, y + h, 0xFF7C5CFF);
-        ctx.drawString(client.font, title, x + 5, y + 4, 0xFFFFFFFF);
+        ctx.text(client.font, title, x + 5, y + 4, 0xFFFFFFFF, true);
         for (int i = 0; i < items.size(); i++) {
             int ix = x + 4 + (i % cols) * 18;
             int iy = y + top + 4 + (i / cols) * 18;
-            ctx.renderItem(items.get(i), ix, iy);
+            ctx.item(items.get(i), ix, iy);
             Compat.overlay(ctx, client, items.get(i), ix, iy);
         }
     }
 
     // ------------------------------------------------------------------ HUD
-    public static void onHud(GuiGraphics ctx) {
+    public static void onHud(GuiGraphicsExtractor ctx) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || client.level == null || client.options.hideGui) return;
         Hud.render(ctx, client);

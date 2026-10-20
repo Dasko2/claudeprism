@@ -1,7 +1,7 @@
 package net.prismfeatures;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
@@ -37,10 +37,10 @@ public class HudEditorScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-        super.render(ctx, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(ctx, mouseX, mouseY, delta);
         Minecraft c = Minecraft.getInstance();
-        ctx.drawCenteredString(this.font, Component.literal("Glissez chaque élément à la souris. Taille -/+ agit sur l'élément sélectionné : " + selected.label + " (x" + String.format("%.1f", selected.scale()) + ")"), this.width / 2, 12, 0xFFFFFFFF);
+        ctx.centeredText(this.font, Component.literal("Glissez chaque élément à la souris. Taille -/+ agit sur l'élément sélectionné : " + selected.label + " (x" + String.format("%.1f", selected.scale()) + ")"), this.width / 2, 12, 0xFFFFFFFF);
 
         // état de la souris (sans dépendre de la signature des événements de souris)
         boolean down = GLFW.glfwGetMouseButton(Compat.handle(c), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
@@ -83,7 +83,7 @@ public class HudEditorScreen extends Screen {
             ctx.fill(x - 3, y - 3, x - 2, y + h + 3, color);
             ctx.fill(x + w + 2, y - 3, x + w + 3, y + h + 3, color);
             e.drawPreview(ctx, c, x, y);
-            ctx.drawString(this.font, e.label, x, y - 13, 0xFFBBAAFF);
+            ctx.text(this.font, e.label, x, y - 13, 0xFFBBAAFF, true);
         }
     }
 

@@ -1,7 +1,7 @@
 package net.prismfeatures;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -34,7 +34,7 @@ public final class Hud {
 
         abstract int width(Minecraft c, boolean preview);
         abstract int height(Minecraft c, boolean preview);
-        abstract void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview);
+        abstract void draw(GuiGraphicsExtractor ctx, Minecraft c, int x, int y, boolean preview);
         abstract boolean hasContent(Minecraft c);
 
         public double scale() { return Config.scale(id); }
@@ -53,7 +53,7 @@ public final class Hud {
         public int h(Minecraft c) { return sh(c, true); }
 
         /** Dessine l'élément à sa taille choisie (échelle). */
-        public void drawScaled(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
+        public void drawScaled(GuiGraphicsExtractor ctx, Minecraft c, int x, int y, boolean preview) {
             double s = scale();
             if (s == 1.0) {
                 draw(ctx, c, x, y, preview);
@@ -64,7 +64,7 @@ public final class Hud {
             Compat.pop(ctx);
         }
 
-        public void drawPreview(GuiGraphics ctx, Minecraft c, int x, int y) { drawScaled(ctx, c, x, y, true); }
+        public void drawPreview(GuiGraphicsExtractor ctx, Minecraft c, int x, int y) { drawScaled(ctx, c, x, y, true); }
     }
 
     private static ItemStack damaged(net.minecraft.world.item.Item item, int damage) {
@@ -87,8 +87,8 @@ public final class Hud {
     }
 
     /** Ligne « image de l'objet + nombre à côté ». */
-    private static void drawItemRow(GuiGraphics ctx, Minecraft c, ItemStack s, int x, int y) {
-        ctx.renderItem(s, x, y);
+    private static void drawItemRow(GuiGraphicsExtractor ctx, Minecraft c, ItemStack s, int x, int y) {
+        ctx.item(s, x, y);
         ctx.drawString(c.font, number(s), x + 22, y + 5, durabilityColor(s));
     }
 
@@ -125,9 +125,9 @@ public final class Hud {
         int height(Minecraft c, boolean preview) { return lines(c).size() * 11; }
         boolean hasContent(Minecraft c) { return true; }
 
-        void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
+        void draw(GuiGraphicsExtractor ctx, Minecraft c, int x, int y, boolean preview) {
             for (String l : lines(c)) {
-                ctx.drawString(c.font, l, x, y, 0xFFFFFFFF);
+                ctx.text(c.font, l, x, y, 0xFFFFFFFF, true);
                 y += 11;
             }
         }
@@ -156,7 +156,7 @@ public final class Hud {
         int height(Minecraft c, boolean preview) { return Math.max(1, pieces(c, preview).size()) * 18; }
         boolean hasContent(Minecraft c) { return !pieces(c, false).isEmpty(); }
 
-        void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
+        void draw(GuiGraphicsExtractor ctx, Minecraft c, int x, int y, boolean preview) {
             for (ItemStack s : pieces(c, preview)) {
                 drawItemRow(ctx, c, s, x, y);
                 y += 18;
@@ -183,14 +183,14 @@ public final class Hud {
         int height(Minecraft c, boolean preview) { return 18; }
         boolean hasContent(Minecraft c) { return !stack(c, false).isEmpty(); }
 
-        void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
+        void draw(GuiGraphicsExtractor ctx, Minecraft c, int x, int y, boolean preview) {
             ItemStack s = stack(c, preview);
             if (s.isEmpty()) return;
             // outil : durabilité restante ; sinon : nombre TOTAL dans l'inventaire (shulkers compris)
             String text;
             if (s.isDamageableItem()) text = String.valueOf(s.getMaxDamage() - s.getDamageValue());
             else text = String.valueOf(preview && c.player == null ? s.getCount() : PrismFeatures.countInInventory(c.player, s));
-            ctx.renderItem(s, x, y);
+            ctx.item(s, x, y);
             ctx.drawString(c.font, text, x + 22, y + 5, durabilityColor(s));
         }
     }
@@ -209,15 +209,15 @@ public final class Hud {
         int height(Minecraft c, boolean preview) { return 10; }
         boolean hasContent(Minecraft c) { return PrismFeatures.lastDeath != null; }
 
-        void draw(GuiGraphics ctx, Minecraft c, int x, int y, boolean preview) {
-            ctx.drawString(c.font, text(), x, y, 0xFFFF5555);
+        void draw(GuiGraphicsExtractor ctx, Minecraft c, int x, int y, boolean preview) {
+            ctx.text(c.font, text(), x, y, 0xFFFF5555, true);
         }
     };
 
     public static final List<Element> ELEMENTS = List.of(INFOS, ARMOR, MAIN, OFF, DEATH);
 
     /** Affichage en jeu. */
-    public static void render(GuiGraphics ctx, Minecraft c) {
+    public static void render(GuiGraphicsExtractor ctx, Minecraft c) {
         int w = ctx.guiWidth();
         int h = ctx.guiHeight();
         for (Element e : ELEMENTS) {

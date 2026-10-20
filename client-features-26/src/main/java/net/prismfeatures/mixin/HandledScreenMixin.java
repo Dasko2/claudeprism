@@ -1,6 +1,6 @@
 package net.prismfeatures.mixin;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,8 +23,8 @@ public abstract class HandledScreenMixin<T extends AbstractContainerMenu> extend
         super(title);
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
-    private void prism$shulkerPreview(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
+    private void prism$shulkerPreview(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (this.hoveredSlot != null) PrismFeatures.onSlotHover(context, this.hoveredSlot, mouseX, mouseY);
     }
 }
