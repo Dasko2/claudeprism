@@ -148,7 +148,7 @@ public class PrismFeatures implements ClientModInitializer {
         boolean allowed = Config.enabled(Config.NIGHT_VISION);
         if (client.screen == null && listening == null && pressed(client, "nv", Config.key("nightVision", DEFAULT_KEY_NIGHT)) && allowed) {
             nightVisionOn = !nightVisionOn;
-            p.displayClientMessage(Component.literal("Night vision : " + (nightVisionOn ? "activée" : "désactivée")), true);
+            client.gui.setOverlayMessage(Component.literal("Night vision : " + (nightVisionOn ? "activée" : "désactivée")), false);
             if (!nightVisionOn) p.removeEffect(MobEffects.NIGHT_VISION);
         }
         if (!allowed && nightVisionOn) {
@@ -198,7 +198,7 @@ public class PrismFeatures implements ClientModInitializer {
             if (isShulker(s)) {
                 ItemContainerContents c = s.get(DataComponents.CONTAINER);
                 if (c != null) {
-                    total += c.nonEmptyStream().filter(inner -> inner.is(ref.getItem())).mapToInt(ItemStack::getCount).sum();
+                    for (ItemStack inner : c.nonEmptyItems()) if (inner.is(ref.getItem())) total += inner.getCount();
                 }
             }
         }
@@ -209,7 +209,7 @@ public class PrismFeatures implements ClientModInitializer {
     private static void openShulker(Minecraft client, int slotId) {
         MinecraftServer server = client.getSingleplayerServer();
         if (server == null) {
-            client.player.displayClientMessage(Component.literal("Ouvrir un shulker depuis l'inventaire : solo uniquement"), true);
+            client.gui.setOverlayMessage(Component.literal("Ouvrir un shulker depuis l'inventaire : solo uniquement"), false);
             return;
         }
         final UUID id = client.player.getUUID();
@@ -260,7 +260,7 @@ public class PrismFeatures implements ClientModInitializer {
             ItemContainerContents container = stack.get(DataComponents.CONTAINER);
             if (container == null) return;
             List<ItemStack> items = new ArrayList<>();
-            container.nonEmptyStream().forEach(items::add);
+            for (ItemStack inner : container.nonEmptyItems()) items.add(inner);
             Minecraft client = Minecraft.getInstance();
             int x = Math.min(mouseX + 12, ctx.guiWidth() - 9 * 18 - 10);
             int y = Math.min(mouseY + 44, ctx.guiHeight() - 4 * 18 - 30);

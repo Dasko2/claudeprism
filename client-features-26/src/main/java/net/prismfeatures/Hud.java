@@ -108,7 +108,7 @@ public final class Hud {
             };
             out.add("XYZ " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + "  " + dir);
             out.add("Biome : " + c.level.getBiome(pos).unwrapKey().map(k -> k.identifier().getPath().replace('_', ' ')).orElse("?"));
-            if (c.getConnection() != null && c.getServer() == null) {
+            if (c.getConnection() != null && c.getSingleplayerServer() == null) {
                 var entry = c.getConnection().getPlayerInfo(p.getUUID());
                 if (entry != null) out.add("Ping : " + entry.getLatency() + " ms");
             }
