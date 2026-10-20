@@ -89,7 +89,7 @@ public final class Hud {
     /** Ligne « image de l'objet + nombre à côté ». */
     private static void drawItemRow(GuiGraphicsExtractor ctx, Minecraft c, ItemStack s, int x, int y) {
         ctx.item(s, x, y);
-        ctx.drawString(c.font, number(s), x + 22, y + 5, durabilityColor(s));
+        ctx.text(c.font, number(s), x + 22, y + 5, durabilityColor(s), true);
     }
 
     // ---------------------------------------------------------------- infos
@@ -191,7 +191,7 @@ public final class Hud {
             if (s.isDamageableItem()) text = String.valueOf(s.getMaxDamage() - s.getDamageValue());
             else text = String.valueOf(preview && c.player == null ? s.getCount() : PrismFeatures.countInInventory(c.player, s));
             ctx.item(s, x, y);
-            ctx.drawString(c.font, text, x + 22, y + 5, durabilityColor(s));
+            ctx.text(c.font, text, x + 22, y + 5, durabilityColor(s), true);
         }
     }
 
