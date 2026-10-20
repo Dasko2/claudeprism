@@ -198,7 +198,7 @@ public class PrismFeatures implements ClientModInitializer {
             if (isShulker(s)) {
                 ItemContainerContents c = s.get(DataComponents.CONTAINER);
                 if (c != null) {
-                    for (ItemStack inner : c.nonEmptyItems()) if (inner.is(ref.getItem())) total += inner.getCount();
+                    for (var tpl : c.nonEmptyItems()) { ItemStack inner = tpl.create(); if (inner.is(ref.getItem())) total += inner.getCount(); }
                 }
             }
         }
@@ -260,7 +260,7 @@ public class PrismFeatures implements ClientModInitializer {
             ItemContainerContents container = stack.get(DataComponents.CONTAINER);
             if (container == null) return;
             List<ItemStack> items = new ArrayList<>();
-            for (ItemStack inner : container.nonEmptyItems()) items.add(inner);
+            for (var tpl : container.nonEmptyItems()) items.add(tpl.create());
             Minecraft client = Minecraft.getInstance();
             int x = Math.min(mouseX + 12, ctx.guiWidth() - 9 * 18 - 10);
             int y = Math.min(mouseY + 44, ctx.guiHeight() - 4 * 18 - 30);
