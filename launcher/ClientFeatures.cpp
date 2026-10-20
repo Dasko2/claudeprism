@@ -42,10 +42,7 @@ static QString featuresDir()
 static QString extractPayload(const QString& loader, const QString& mc)
 {
     // version du mod la plus proche : les versions intermédiaires utilisent le build compatible
-    static const QMap<QString, QString> alias = {
-        { "1.21", "1.21.1" },   { "1.21.2", "1.21.1" }, { "1.21.3", "1.21.1" },
-        { "1.21.6", "1.21.8" }, { "1.21.7", "1.21.8" }, { "1.21.9", "1.21.10" },
-    };
+    static const QMap<QString, QString> alias = { { "1.21", "1.21.1" } };
     const QString resolved = alias.value(mc, mc);
     QStringList names;
     names << QString("%1-%2.jar").arg(loader, resolved);
