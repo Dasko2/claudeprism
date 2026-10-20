@@ -37,22 +37,12 @@ import java.util.UUID;
  * Chaque fonctionnalité est isolée : si l'une échoue, elle est coupée (et loguée) sans toucher aux autres.
  */
 public class PrismFeatures implements ClientModInitializer {
-    /** Codes de touches (valeurs GLFW), sans dépendre de LWJGL GLFW (absent des versions récentes). */
-    static final class GLFW {
-        static final int GLFW_KEY_SPACE = 32, GLFW_KEY_ESCAPE = 256, GLFW_KEY_ENTER = 257, GLFW_KEY_TAB = 258,
-            GLFW_KEY_RIGHT = 262, GLFW_KEY_LEFT = 263, GLFW_KEY_DOWN = 264, GLFW_KEY_UP = 265,
-            GLFW_KEY_F1 = 290, GLFW_KEY_F25 = 314, GLFW_KEY_LAST = 348,
-            GLFW_KEY_LEFT_SHIFT = 340, GLFW_KEY_LEFT_CONTROL = 341, GLFW_KEY_LEFT_ALT = 342,
-            GLFW_KEY_RIGHT_SHIFT = 344, GLFW_KEY_RIGHT_CONTROL = 345, GLFW_KEY_RIGHT_ALT = 346,
-            GLFW_KEY_N = 78, GLFW_KEY_C = 67, GLFW_KEY_V = 86;
-    }
-
     public static final Logger LOGGER = LoggerFactory.getLogger("prismfeatures");
 
-    public static final int DEFAULT_KEY_NIGHT = GLFW.GLFW_KEY_N;
-    public static final int DEFAULT_KEY_ZOOM = GLFW.GLFW_KEY_C;
-    public static final int DEFAULT_KEY_MENU = GLFW.GLFW_KEY_RIGHT_SHIFT;
-    public static final int DEFAULT_KEY_SHULKER = GLFW.GLFW_KEY_V;
+    public static final int DEFAULT_KEY_NIGHT = Compat.KEY_N;
+    public static final int DEFAULT_KEY_ZOOM = Compat.KEY_C;
+    public static final int DEFAULT_KEY_MENU = Compat.KEY_RSHIFT;
+    public static final int DEFAULT_KEY_SHULKER = Compat.KEY_V;
 
     private static final Set<String> broken = new HashSet<>();
     private static final Set<String> okLogged = new HashSet<>();
@@ -101,23 +91,6 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     public static String keyName(int code) {
-        switch (code) {
-            case GLFW.GLFW_KEY_SPACE: return "Espace";
-            case GLFW.GLFW_KEY_LEFT_SHIFT: return "Maj gauche";
-            case GLFW.GLFW_KEY_RIGHT_SHIFT: return "Maj droite";
-            case GLFW.GLFW_KEY_LEFT_CONTROL: return "Ctrl gauche";
-            case GLFW.GLFW_KEY_RIGHT_CONTROL: return "Ctrl droite";
-            case GLFW.GLFW_KEY_LEFT_ALT: return "Alt gauche";
-            case GLFW.GLFW_KEY_RIGHT_ALT: return "Alt droite";
-            case GLFW.GLFW_KEY_TAB: return "Tab";
-            case GLFW.GLFW_KEY_ENTER: return "Entrée";
-            case GLFW.GLFW_KEY_UP: return "Flèche haut";
-            case GLFW.GLFW_KEY_DOWN: return "Flèche bas";
-            case GLFW.GLFW_KEY_LEFT: return "Flèche gauche";
-            case GLFW.GLFW_KEY_RIGHT: return "Flèche droite";
-            default:
-        }
-        if (code >= GLFW.GLFW_KEY_F1 && code <= GLFW.GLFW_KEY_F25) return "F" + (code - GLFW.GLFW_KEY_F1 + 1);
         String n = Compat.keyDisplay(code);
         return n != null && !n.isEmpty() ? n.toUpperCase() : "Touche " + code;
     }
@@ -143,9 +116,9 @@ public class PrismFeatures implements ClientModInitializer {
     /** Menu : « appuyez sur une touche ». Échap annule. */
     private static void captureKey(Minecraft client) {
         if (listening == null) return;
-        for (int code = GLFW.GLFW_KEY_SPACE; code <= GLFW.GLFW_KEY_LAST; code++) {
+        for (int code : Compat.candidates()) {
             if (!keyDown(client, code)) continue;
-            if (code != GLFW.GLFW_KEY_ESCAPE) Config.setKey(listening, code);
+            if (code != Compat.KEY_ESCAPE) Config.setKey(listening, code);
             listening = null;
             if (onBindingChanged != null) onBindingChanged.run();
             return;
@@ -218,7 +191,7 @@ public class PrismFeatures implements ClientModInitializer {
     private static void openShulker(Minecraft client, int slotId) {
         MinecraftServer server = client.getSingleplayerServer();
         if (server == null) {
-            Compat.overlayMessage(client, Component.literal("Ouvrir un shulker depuis l'inventaire : solo uniquement"), false);
+            Compat.overlayMessage(client, Component.literal("Ouvrir un shulker depuis l'inventaire : solo uniquement"));
             return;
         }
         final UUID id = client.player.getUUID();
