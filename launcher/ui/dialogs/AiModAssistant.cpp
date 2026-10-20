@@ -293,10 +293,10 @@ bool AiModAssistant::installProject(const QString& projectId, const QString& req
         }
     }
 
-    const QByteArray data = httpRequest(dl, {}, {}, &status);
+    const QByteArray file_bytes = httpRequest(dl, {}, {}, &status);
     const QString expected = file["hashes"].toObject()["sha512"].toString();
-    if (status != 200 || data.isEmpty() || expected.isEmpty() ||
-        QCryptographicHash::hash(data, QCryptographicHash::Sha512).toHex().toLower() != expected.toLower().toUtf8()) {
+    if (status != 200 || file_bytes.isEmpty() || expected.isEmpty() ||
+        QCryptographicHash::hash(file_bytes, QCryptographicHash::Sha512).toHex().toLower() != expected.toLower().toUtf8()) {
         log << QString("%1 : téléchargement invalide (empreinte différente), annulé").arg(title);
         return false;
     }
@@ -306,7 +306,7 @@ bool AiModAssistant::installProject(const QString& projectId, const QString& req
         log << QString("%1 : impossible d'écrire le fichier").arg(title);
         return false;
     }
-    out.write(data);
+    out.write(file_bytes);
     out.close();
 
     state = loadState();

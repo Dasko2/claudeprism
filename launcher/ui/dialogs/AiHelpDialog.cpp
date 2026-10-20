@@ -138,11 +138,11 @@ void AiHelpDialog::onFinished()
     auto* reply = m_reply;
     m_reply = nullptr;
     m_sendButton->setEnabled(true);
-    const QByteArray data = reply->readAll();
+    const QByteArray reply_body = reply->readAll();
     const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     reply->deleteLater();
 
-    const QJsonObject obj = QJsonDocument::fromJson(data).object();
+    const QJsonObject obj = QJsonDocument::fromJson(reply_body).object();
     if (status == 401) {
         m_status->setText(tr("Clé API refusée : vérifie-la."));
         return;
