@@ -51,6 +51,10 @@ static QString extractPayload(const QString& loader, const QString& mc)
     names << QString("%1-%2.jar").arg(loader, resolved);
     if (resolved != mc)
         names << QString("%1-%2.jar").arg(loader, mc);
+    // 26.1.2 -> 26.1 : les versions de correctif utilisent le build de la version mineure
+    const auto parts = mc.split('.');
+    if (parts.size() >= 3)
+        names << QString("%1-%2.%3.jar").arg(loader, parts[0], parts[1]);
 
     for (const QString& name : names) {
         QFile embedded(":/features/" + name);
@@ -116,7 +120,7 @@ QString statusText(MinecraftInstance* instance)
         return QString("loader %1 pas encore pris en charge").arg(loader);
     const QString payload = extractPayload(loader, mc);
     if (payload.isEmpty())
-        return QString("aucune charge utile pour %1 %2 (versions prises en charge : 1.21 à 1.21.11)").arg(loader, mc);
+        return QString("aucune charge utile pour %1 %2 (versions prises en charge : 1.21 à 1.21.11 et 26.1 à 26.3)").arg(loader, mc);
     return QString("OK : %1 %2, mod chargé depuis %3").arg(loader, mc, QFileInfo(payload).fileName());
 }
 
