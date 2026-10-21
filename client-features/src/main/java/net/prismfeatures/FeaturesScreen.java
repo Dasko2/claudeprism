@@ -29,7 +29,7 @@ public class FeaturesScreen extends Screen {
         final int w = 200;
         final int h = 20;
         final int gap = 4;
-        final int total = Config.LABELS.size() + 4;
+        final int total = Config.LABELS.size() + 3;
         final int rows = (total + 1) / 2;
         final int left = this.width / 2 - w - gap / 2;
         final int right = this.width / 2 + gap / 2;
@@ -49,7 +49,6 @@ public class FeaturesScreen extends Screen {
 
         index = addKeyButton("nightVision", "Touche night vision", PrismFeatures.DEFAULT_KEY_NIGHT, index, left, right, top, w, h, gap);
         index = addKeyButton("zoom", "Touche zoom", PrismFeatures.DEFAULT_KEY_ZOOM, index, left, right, top, w, h, gap);
-        index = addKeyButton("shulkerOpen", "Touche ouvrir shulker (solo)", PrismFeatures.DEFAULT_KEY_SHULKER, index, left, right, top, w, h, gap);
         index = addKeyButton("menu", "Touche du menu", PrismFeatures.DEFAULT_KEY_MENU, index, left, right, top, w, h, gap);
 
         final int below = top + rows * (h + gap) + 6;

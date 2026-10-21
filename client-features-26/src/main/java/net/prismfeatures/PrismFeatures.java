@@ -42,7 +42,6 @@ public class PrismFeatures implements ClientModInitializer {
     public static final int DEFAULT_KEY_NIGHT = Compat.KEY_N;
     public static final int DEFAULT_KEY_ZOOM = Compat.KEY_C;
     public static final int DEFAULT_KEY_MENU = Compat.KEY_RSHIFT;
-    public static final int DEFAULT_KEY_SHULKER = Compat.KEY_V;
 
     private static final Set<String> broken = new HashSet<>();
     private static final Set<String> okLogged = new HashSet<>();
@@ -58,7 +57,6 @@ public class PrismFeatures implements ClientModInitializer {
     private static int savedFov = 70;
     private static boolean wasDead = false;
     public static BlockPos lastDeath = null;
-    private static boolean shulkerLatch = false;
 
     @Override
     public void onInitializeClient() {
@@ -106,7 +104,6 @@ public class PrismFeatures implements ClientModInitializer {
         safe("night-vision", () -> tickNightVision(client));
         safe("zoom", () -> tickZoom(client));
         safe("point-de-mort", () -> tickDeath(client));
-        if (!keyDown(client, Config.key("shulkerOpen", DEFAULT_KEY_SHULKER))) shulkerLatch = false;
         safe("menu", () -> {
             if (Compat.screen(client) == null && pressed(client, "menu", Config.key("menu", DEFAULT_KEY_MENU)))
                 Compat.setScreen(client, new FeaturesScreen());
@@ -187,50 +184,10 @@ public class PrismFeatures implements ClientModInitializer {
         return total;
     }
 
-    /** Solo uniquement : ouvre le contenu d'un shulker depuis l'inventaire, sans le poser. */
-    private static void openShulker(Minecraft client, int slotId) {
-        MinecraftServer server = client.getSingleplayerServer();
-        if (server == null) {
-            Compat.overlayMessage(client, Component.literal("Ouvrir un shulker depuis l'inventaire : solo uniquement"));
-            return;
-        }
-        final UUID id = client.player.getUUID();
-        server.execute(() -> {
-            ServerPlayer sp = server.getPlayerList().getPlayer(id);
-            if (sp == null) return;
-            final ItemStack target = sp.containerMenu.getSlot(slotId).getItem();
-            if (!isShulker(target)) return;
-            final SimpleContainer inv = new SimpleContainer(27);
-            ItemContainerContents comp = target.get(DataComponents.CONTAINER);
-            if (comp != null) {
-                NonNullList<ItemStack> tmp = NonNullList.withSize(27, ItemStack.EMPTY);
-                comp.copyInto(tmp);
-                for (int i = 0; i < 27; i++) inv.setItem(i, tmp.get(i));
-            }
-            sp.openMenu(new SimpleMenuProvider((syncId, playerInv, player) ->
-                    new ShulkerBoxMenu(syncId, playerInv, inv) {
-                        @Override
-                        public void removed(Player pl) {
-                            super.removed(pl);
-                            List<ItemStack> out = new ArrayList<>();
-                            for (int i = 0; i < 27; i++) out.add(inv.getItem(i).copy());
-                            target.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(out));
-                        }
-                    }, target.getHoverName()));
-        });
-    }
-
-    /** Survol d'un shulker dans un inventaire : son contenu s'affiche en grille ; la touche (V) l'ouvre en solo. */
+    /** Survol d'un shulker dans un inventaire : son contenu s'affiche en grille. */
     public static void onSlotHover(GuiGraphicsExtractor ctx, Slot slot, int mouseX, int mouseY) {
         ItemStack stack = slot.getItem();
         if (!isShulker(stack)) return;
-        safe("shulker-ouvrir", () -> {
-            Minecraft client = Minecraft.getInstance();
-            if (keyDown(client, Config.key("shulkerOpen", DEFAULT_KEY_SHULKER)) && !shulkerLatch) {
-                shulkerLatch = true;
-                openShulker(client, slot.index);
-            }
-        });
         onShulkerHover(ctx, stack, mouseX, mouseY);
     }
 
@@ -244,8 +201,14 @@ public class PrismFeatures implements ClientModInitializer {
             List<ItemStack> items = new ArrayList<>();
             for (var tpl : container.nonEmptyItems()) items.add(tpl.create());
             Minecraft client = Minecraft.getInstance();
-            int x = Math.min(mouseX + 12, ctx.guiWidth() - 9 * 18 - 10);
-            int y = Math.min(mouseY + 44, ctx.guiHeight() - 4 * 18 - 30);
+            int rows = Math.max(1, (items.size() + 8) / 9);
+            int gridH = rows * 18 + 8 + 14;
+            int gridW = 9 * 18 + 8;
+            int x = Math.max(4, Math.min(mouseX + 12, ctx.guiWidth() - gridW - 4));
+            // au-dessus de l'infobulle de base (qui commence ~12 px au-dessus du curseur) ; en dessous s'il n'y a pas la place
+            int y = mouseY - 12 - 6 - gridH;
+            if (y < 4) y = Math.min(mouseY + 40, ctx.guiHeight() - gridH - 4);
+            Compat.raise(ctx);
             drawGrid(ctx, client, items, x, y, items.isEmpty() ? "Shulker vide" : "Contenu du shulker");
         });
     }
