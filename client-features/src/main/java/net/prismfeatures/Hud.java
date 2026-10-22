@@ -96,7 +96,7 @@ public final class Hud {
         private List<String> lines(MinecraftClient c) {
             PlayerEntity p = c.player;
             List<String> out = new ArrayList<>();
-            out.add(c.getCurrentFps() + " FPS");
+            out.add(Compat.fps(c) + " FPS");
             if (p == null || c.world == null) return out;
             BlockPos pos = p.getBlockPos();
             String dir = switch (p.getHorizontalFacing()) {

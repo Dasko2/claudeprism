@@ -39,4 +39,5 @@ public final class Compat {
         return out;
     }
 
+    public static int fps(MinecraftClient c) { return c.getCurrentFps(); }
 }

@@ -32,4 +32,11 @@ public final class Compat {
         return out;
     }
 
+    public static int fps(MinecraftClient c) {
+        String d = c.fpsDebugString;
+        if (d == null) return 0;
+        int i = 0;
+        while (i < d.length() && Character.isDigit(d.charAt(i))) i++;
+        return i == 0 ? 0 : Integer.parseInt(d.substring(0, i));
+    }
 }
