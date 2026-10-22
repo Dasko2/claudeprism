@@ -15,7 +15,7 @@ jobs:
           - { mc: '1.19', yarn: '1.19+build.4', compat: v119, family: ms, java: 17 }
           - { mc: '1.19.1', yarn: '1.19.1+build.6', compat: v119, family: ms, java: 17 }
           - { mc: '1.19.2', yarn: '1.19.2+build.28', compat: v119, family: ms, java: 17 }
-          - { mc: '1.19.3', yarn: '1.19.3+build.5', compat: v1193, family: ms, java: 17 }
+          - { mc: '1.19.3', yarn: '1.19.3+build.5', compat: v1193o, family: ms, java: 17 }
           - { mc: '1.19.4', yarn: '1.19.4+build.2', compat: v1193, family: ms, java: 17 }
           - { mc: '1.20', yarn: '1.20+build.1', compat: v120, family: dc, java: 17 }
           - { mc: '1.20.1', yarn: '1.20.1+build.10', compat: v120, family: dc, java: 17 }
