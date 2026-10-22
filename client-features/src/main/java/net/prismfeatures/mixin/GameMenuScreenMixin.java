@@ -2,7 +2,7 @@ package net.prismfeatures.mixin;
 
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.prismfeatures.Compat;
 import net.minecraft.text.Text;
 import net.prismfeatures.FeaturesScreen;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,7 +19,6 @@ public abstract class GameMenuScreenMixin extends Screen {
 
     @Inject(method = "init", at = @At("TAIL"))
     private void prism$addConfigButton(CallbackInfo ci) {
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Menu de config"),
-                b -> this.client.setScreen(new FeaturesScreen(this))).dimensions(6, 6, 110, 20).build());
+        this.addDrawableChild(Compat.button(Text.literal("Menu de config"), () -> this.client.setScreen(new FeaturesScreen(this)), 6, 6, 110, 20));
     }
 }

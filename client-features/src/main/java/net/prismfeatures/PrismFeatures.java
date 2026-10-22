@@ -3,22 +3,12 @@ package net.prismfeatures;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ShulkerBoxScreenHandler;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.screen.slot.Slot;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.glfw.GLFW;
@@ -31,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Fonctionnalités intégrées. Aucune dépendance à Fabric API : tout passe par des mixins.
@@ -152,9 +141,9 @@ public class PrismFeatures implements ClientModInitializer {
             nightVisionOn = false;
             p.removeStatusEffect(StatusEffects.NIGHT_VISION);
         }
-        if (nightVisionOn && !p.hasStatusEffect(StatusEffects.NIGHT_VISION)) {
+        if (nightVisionOn && (!p.hasStatusEffect(StatusEffects.NIGHT_VISION) || p.getStatusEffect(StatusEffects.NIGHT_VISION).getDuration() < 2000)) {
             // effet purement local, infini, sans particules ni icône
-            p.addStatusEffect(new StatusEffectInstance(StatusEffects.NIGHT_VISION, StatusEffectInstance.INFINITE, 0, false, false, false));
+            p.addStatusEffect(new StatusEffectInstance(StatusEffects.NIGHT_VISION, 1000000, 0, false, false, false));
         }
     }
 
@@ -193,46 +182,40 @@ public class PrismFeatures implements ClientModInitializer {
             if (s.isEmpty()) continue;
             if (s.isOf(ref.getItem())) total += s.getCount();
             if (isShulker(s)) {
-                ContainerComponent c = s.get(DataComponentTypes.CONTAINER);
-                if (c != null) {
-                    total += c.streamNonEmpty().filter(inner -> inner.isOf(ref.getItem())).mapToInt(ItemStack::getCount).sum();
-                }
+                for (ItemStack inner : Compat.shulkerItems(s)) if (inner.isOf(ref.getItem())) total += inner.getCount();
             }
         }
         return total;
     }
 
     /** Survol d'un shulker dans un inventaire : son contenu s'affiche en grille. */
-    public static void onSlotHover(DrawContext ctx, Slot slot, int mouseX, int mouseY) {
+    public static void onSlotHover(Gfx ctx, Slot slot, int mouseX, int mouseY) {
         ItemStack stack = slot.getStack();
         if (!isShulker(stack)) return;
         onShulkerHover(ctx, stack, mouseX, mouseY);
     }
 
     /** Aperçu du contenu en grille à côté du curseur. */
-    public static void onShulkerHover(DrawContext ctx, ItemStack stack, int mouseX, int mouseY) {
+    public static void onShulkerHover(Gfx ctx, ItemStack stack, int mouseX, int mouseY) {
         if (!Config.enabled(Config.SHULKER)) return;
         safe("shulker", () -> {
             if (!isShulker(stack)) return;
-            ContainerComponent container = stack.get(DataComponentTypes.CONTAINER);
-            if (container == null) return;
-            List<ItemStack> items = new ArrayList<>();
-            container.streamNonEmpty().forEach(items::add);
+            List<ItemStack> items = Compat.shulkerItems(stack);
             MinecraftClient client = MinecraftClient.getInstance();
             int rows = Math.max(1, (items.size() + 8) / 9);
             int gridH = rows * 18 + 8 + 14;
             int gridW = 9 * 18 + 8;
-            int x = Math.max(4, Math.min(mouseX + 12, ctx.getScaledWindowWidth() - gridW - 4));
+            int x = Math.max(4, Math.min(mouseX + 12, ctx.width() - gridW - 4));
             // au-dessus de l'infobulle de base (qui commence ~12 px au-dessus du curseur) ; en dessous s'il n'y a pas la place
             int y = mouseY - 12 - 6 - gridH;
-            if (y < 4) y = Math.min(mouseY + 40, ctx.getScaledWindowHeight() - gridH - 4);
-            Compat.raise(ctx);
+            if (y < 4) y = Math.min(mouseY + 40, ctx.height() - gridH - 4);
+            ctx.raise();
             drawGrid(ctx, client, items, x, y, items.isEmpty() ? "Shulker vide" : "Contenu du shulker");
         });
     }
 
     /** Petit panneau avec les objets en grille de 9 colonnes (icônes + quantités). */
-    private static void drawGrid(DrawContext ctx, MinecraftClient client, List<ItemStack> items, int x, int y, String title) {
+    private static void drawGrid(Gfx ctx, MinecraftClient client, List<ItemStack> items, int x, int y, String title) {
         int cols = 9;
         int rows = Math.max(1, (items.size() + cols - 1) / cols);
         int top = 14;
@@ -243,17 +226,17 @@ public class PrismFeatures implements ClientModInitializer {
         ctx.fill(x, y + h - 1, x + w, y + h, 0xFF7C5CFF);
         ctx.fill(x, y, x + 1, y + h, 0xFF7C5CFF);
         ctx.fill(x + w - 1, y, x + w, y + h, 0xFF7C5CFF);
-        ctx.drawTextWithShadow(client.textRenderer, title, x + 5, y + 4, 0xFFFFFFFF);
+        ctx.text(title, x + 5, y + 4, 0xFFFFFFFF);
         for (int i = 0; i < items.size(); i++) {
             int ix = x + 4 + (i % cols) * 18;
             int iy = y + top + 4 + (i / cols) * 18;
-            ctx.drawItem(items.get(i), ix, iy);
-            Compat.overlay(ctx, client, items.get(i), ix, iy);
+            ctx.item(items.get(i), ix, iy);
+            ctx.overlay(items.get(i), ix, iy);
         }
     }
 
     // ------------------------------------------------------------------ HUD
-    public static void onHud(DrawContext ctx) {
+    public static void onHud(Gfx ctx) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null || client.world == null || client.options.hudHidden) return;
         Hud.render(ctx, client);

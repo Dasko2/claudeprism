@@ -1,0 +1,7 @@
+{
+  "required": false,
+  "package": "net.prismfeatures.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["MinecraftClientMixin", "InGameHudMixin", "HandledScreenMixin", "GameMenuScreenMixin", "ShulkerBoxBlockMixin", "ContainerComponentMixin"],
+  "injectors": { "defaultRequire": 0 }
+}

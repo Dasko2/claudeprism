@@ -117,7 +117,7 @@ QString statusText(MinecraftInstance* instance)
         return QString("loader %1 pas encore pris en charge").arg(loader);
     const QString payload = extractPayload(loader, mc);
     if (payload.isEmpty())
-        return QString("aucune charge utile pour %1 %2 (versions prises en charge : 1.21 à 1.21.11 et 26.1 à 26.3)").arg(loader, mc);
+        return QString("aucune charge utile pour %1 %2 (versions prises en charge : 1.19 à 1.21.11 et 26.1 à 26.3)").arg(loader, mc);
     return QString("OK : %1 %2, mod chargé depuis %3").arg(loader, mc, QFileInfo(payload).fileName());
 }
 

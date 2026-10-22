@@ -1,6 +1,5 @@
 package net.prismfeatures;
 
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Menu de config en jeu : interrupteurs des fonctionnalités + touches modifiables. */
-public class FeaturesScreen extends Screen {
+public class FeaturesScreen extends ScreenBase {
     private final Screen parent;
     private final List<Runnable> refreshers = new ArrayList<>();
 
@@ -38,12 +37,13 @@ public class FeaturesScreen extends Screen {
 
         for (Map.Entry<String, String> e : Config.LABELS.entrySet()) {
             final String key = e.getKey();
-            ButtonWidget b = ButtonWidget.builder(label(key), btn -> {
+            final ButtonWidget[] ref = new ButtonWidget[1];
+            ref[0] = Compat.button(label(key), () -> {
                 Config.toggle(key);
-                btn.setMessage(label(key));
-            }).dimensions(index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h).build();
-            b.active = Config.allowed(key);
-            this.addDrawableChild(b);
+                ref[0].setMessage(label(key));
+            }, index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h);
+            ref[0].active = Config.allowed(key);
+            this.addDrawableChild(ref[0]);
             index++;
         }
 
@@ -52,21 +52,21 @@ public class FeaturesScreen extends Screen {
         index = addKeyButton("menu", "Touche du menu", PrismFeatures.DEFAULT_KEY_MENU, index, left, right, top, w, h, gap);
 
         final int below = top + rows * (h + gap) + 6;
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Placer les éléments à l'écran"),
-                btn -> this.client.setScreen(new HudEditorScreen(this))).dimensions(this.width / 2 - 100, below, 200, h).build());
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Terminé"), btn -> this.close())
-                .dimensions(this.width / 2 - 100, below + h + gap, 200, h).build());
+        this.addDrawableChild(Compat.button(Text.literal("Placer les éléments à l'écran"),
+                () -> this.client.setScreen(new HudEditorScreen(this)), this.width / 2 - 100, below, 200, h));
+        this.addDrawableChild(Compat.button(Text.literal("Terminé"), () -> this.close(), this.width / 2 - 100, below + h + gap, 200, h));
 
         PrismFeatures.onBindingChanged = () -> refreshers.forEach(Runnable::run);
     }
 
     private int addKeyButton(String id, String name, int def, int index, int left, int right, int top, int w, int h, int gap) {
-        ButtonWidget b = ButtonWidget.builder(keyLabel(id, name, def), btn -> {
+        final ButtonWidget[] ref = new ButtonWidget[1];
+        ref[0] = Compat.button(keyLabel(id, name, def), () -> {
             PrismFeatures.listening = id;
             refreshers.forEach(Runnable::run);
-        }).dimensions(index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h).build();
-        refreshers.add(() -> b.setMessage(keyLabel(id, name, def)));
-        this.addDrawableChild(b);
+        }, index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h);
+        refreshers.add(() -> ref[0].setMessage(keyLabel(id, name, def)));
+        this.addDrawableChild(ref[0]);
         return index + 1;
     }
 
@@ -82,9 +82,8 @@ public class FeaturesScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 14, 0xFFFFFFFF);
+    protected void draw(Gfx g, int mouseX, int mouseY, float delta) {
+        g.centered(this.title, this.width / 2, 14, 0xFFFFFFFF);
     }
 
     @Override

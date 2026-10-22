@@ -1,14 +1,12 @@
 package net.prismfeatures;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 /** Éditeur de placement : glisser chaque élément avec la souris où on veut. */
-public class HudEditorScreen extends Screen {
+public class HudEditorScreen extends ScreenBase {
     private final Screen parent;
     private Hud.Element dragging = null;
     private Hud.Element selected = Hud.ELEMENTS.get(0);
@@ -26,21 +24,16 @@ public class HudEditorScreen extends Screen {
         final int bw = 90;
         final int y = this.height - 28;
         final int x0 = this.width / 2 - (4 * bw + 3 * 4) / 2;
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Taille -"), b -> Config.setScale(selected.id, selected.scale() - 0.1))
-                .dimensions(x0, y, bw, 20).build());
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Taille +"), b -> Config.setScale(selected.id, selected.scale() + 0.1))
-                .dimensions(x0 + (bw + 4), y, bw, 20).build());
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Réinitialiser"), b -> Config.resetPositions())
-                .dimensions(x0 + 2 * (bw + 4), y, bw, 20).build());
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Terminé"), b -> this.close())
-                .dimensions(x0 + 3 * (bw + 4), y, bw, 20).build());
+        this.addDrawableChild(Compat.button(Text.literal("Taille -"), () -> Config.setScale(selected.id, selected.scale() - 0.1), x0, y, bw, 20));
+        this.addDrawableChild(Compat.button(Text.literal("Taille +"), () -> Config.setScale(selected.id, selected.scale() + 0.1), x0 + (bw + 4), y, bw, 20));
+        this.addDrawableChild(Compat.button(Text.literal("Réinitialiser"), () -> Config.resetPositions(), x0 + 2 * (bw + 4), y, bw, 20));
+        this.addDrawableChild(Compat.button(Text.literal("Terminé"), () -> this.close(), x0 + 3 * (bw + 4), y, bw, 20));
     }
 
     @Override
-    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        super.render(ctx, mouseX, mouseY, delta);
+    protected void draw(Gfx ctx, int mouseX, int mouseY, float delta) {
         MinecraftClient c = MinecraftClient.getInstance();
-        ctx.drawCenteredTextWithShadow(this.textRenderer, Text.literal("Glissez chaque élément à la souris. Taille -/+ agit sur l'élément sélectionné : " + selected.label + " (x" + String.format("%.1f", selected.scale()) + ")"), this.width / 2, 12, 0xFFFFFFFF);
+        ctx.centered(Text.literal("Glissez chaque élément à la souris. Taille -/+ agit sur l'élément sélectionné : " + selected.label + " (x" + String.format("%.1f", selected.scale()) + ")"), this.width / 2, 12, 0xFFFFFFFF);
 
         // état de la souris (sans dépendre de la signature des événements de souris)
         boolean down = GLFW.glfwGetMouseButton(Compat.handle(c), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
@@ -83,7 +76,7 @@ public class HudEditorScreen extends Screen {
             ctx.fill(x - 3, y - 3, x - 2, y + h + 3, color);
             ctx.fill(x + w + 2, y - 3, x + w + 3, y + h + 3, color);
             e.drawPreview(ctx, c, x, y);
-            ctx.drawTextWithShadow(this.textRenderer, e.label, x, y - 13, 0xFFBBAAFF);
+            ctx.text(e.label, x, y - 13, 0xFFBBAAFF);
         }
     }
 
