@@ -39,4 +39,5 @@ public final class Compat {
         while (i < d.length() && Character.isDigit(d.charAt(i))) i++;
         return i == 0 ? 0 : Integer.parseInt(d.substring(0, i));
     }
+    public static String effectName(net.minecraft.entity.effect.StatusEffectInstance i) { return i.getEffectType().getName().getString(); }
 }

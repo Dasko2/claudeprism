@@ -7,11 +7,11 @@
 #endif
 
 [Setup]
-AppName=Prism Launcher Moderne
+AppName=PrismLauncher
 AppVersion=1.0
 AppPublisher=Dasko2
-DefaultDirName={localappdata}\Programs\PrismLauncherModern
-DefaultGroupName=Prism Launcher Moderne
+DefaultDirName={localappdata}\Programs\PrismLauncher
+DefaultGroupName=PrismLauncher
 PrivilegesRequired=lowest
 OutputDir={#OutDir}
 OutputBaseFilename=PrismLauncher-Setup
@@ -25,8 +25,8 @@ DisableProgramGroupPage=yes
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 
 [Icons]
-Name: "{autoprograms}\Prism Launcher Moderne"; Filename: "{app}\prismlauncher.exe"
-Name: "{autodesktop}\Prism Launcher Moderne"; Filename: "{app}\prismlauncher.exe"
+Name: "{autoprograms}\PrismLauncher"; Filename: "{app}\prismlauncher.exe"
+Name: "{autodesktop}\PrismLauncher"; Filename: "{app}\prismlauncher.exe"
 
 [Run]
 Filename: "{app}\prismlauncher.exe"; Description: "Lancer maintenant"; Flags: nowait postinstall skipifsilent

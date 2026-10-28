@@ -213,12 +213,29 @@ public final class Hud {
         }
     };
 
-    public static final List<Element> ELEMENTS = List.of(INFOS, ARMOR, MAIN, OFF, DEATH);
+    /** Adapte un élément indépendant de la version (Extras) à Hud.Element. */
+    private static Element wrap(Extras.Piece p) {
+        return new Element(p.id, p.label, p.toggleKey, p.defX, p.defY) {
+            int width(MinecraftClient c, boolean preview) { return p.width(preview); }
+            int height(MinecraftClient c, boolean preview) { return p.height(preview); }
+            void draw(Gfx ctx, MinecraftClient c, int x, int y, boolean preview) { p.draw(ctx, x, y, preview); }
+            boolean hasContent(MinecraftClient c) { return p.hasContent(); }
+        };
+    }
+
+    public static final List<Element> ELEMENTS = build();
+
+    private static List<Element> build() {
+        List<Element> l = new ArrayList<>(List.of(INFOS, ARMOR, MAIN, OFF, DEATH));
+        for (Extras.Piece p : Extras.PIECES) l.add(wrap(p));
+        return List.copyOf(l);
+    }
 
     /** Affichage en jeu. */
     public static void render(Gfx ctx, MinecraftClient c) {
         int w = ctx.width();
         int h = ctx.height();
+        PrismFeatures.safe("viseur", () -> Extras.drawCrosshair(ctx));
         for (Element e : ELEMENTS) {
             final Element el = e;
             if (!Config.enabled(el.toggleKey)) continue;

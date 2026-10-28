@@ -40,4 +40,5 @@ public final class Compat {
     }
 
     public static int fps(MinecraftClient c) { return c.getCurrentFps(); }
+    public static String effectName(net.minecraft.entity.effect.StatusEffectInstance i) { return i.getEffectType().getName().getString(); }
 }

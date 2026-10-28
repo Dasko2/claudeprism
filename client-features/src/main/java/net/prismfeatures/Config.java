@@ -24,18 +24,32 @@ public final class Config {
     public static final String MAIN_HAND = "mainHand";
     public static final String OFF_HAND = "offHand";
     public static final String DEATH = "deathPoint";
+    public static final String CPS = "cps";
+    public static final String KEYS = "keys";
+    public static final String EFFECTS = "effects";
+    public static final String COMBO = "combo";
+    public static final String DAMAGE = "damage";
+    public static final String COMPASS = "compass";
+    /** Fonctions nouvelles désactivées au départ pour ne pas encombrer l'écran. */
+    private static final java.util.Set<String> OFF_BY_DEFAULT = java.util.Set.of(CPS, KEYS, EFFECTS, COMBO, DAMAGE, COMPASS);
 
     /** clé -> libellé affiché dans le menu */
     public static final Map<String, String> LABELS = new LinkedHashMap<>();
     static {
         LABELS.put(NIGHT_VISION, "Night vision");
-        LABELS.put(SHULKER, "Vision des shulkers");
+        LABELS.put(SHULKER, "Vision shulkers");
         LABELS.put(ZOOM, "Zoom");
-        LABELS.put(HUD, "Infos (FPS, XYZ, biome...)");
+        LABELS.put(HUD, "Infos (FPS, XYZ...)");
         LABELS.put(ARMOR, "Armure");
         LABELS.put(MAIN_HAND, "Objet en main");
         LABELS.put(OFF_HAND, "Seconde main");
         LABELS.put(DEATH, "Point de mort");
+        LABELS.put(CPS, "CPS");
+        LABELS.put(KEYS, "Touches affichées");
+        LABELS.put(EFFECTS, "Effets de potion");
+        LABELS.put(COMBO, "Combo");
+        LABELS.put(DAMAGE, "Dégâts reçus");
+        LABELS.put(COMPASS, "Boussole");
     }
 
     private static JsonObject launcher = new JsonObject();
@@ -71,12 +85,25 @@ public final class Config {
         return get(launcher, key);
     }
 
+    private static boolean userOn(String key) {
+        return user.has(key) ? user.get(key).getAsBoolean() : !OFF_BY_DEFAULT.contains(key);
+    }
+
     public static boolean enabled(String key) {
-        return allowed(key) && get(user, key);
+        return allowed(key) && userOn(key);
     }
 
     public static void toggle(String key) {
-        user.addProperty(key, !get(user, key));
+        user.addProperty(key, !userOn(key));
+        persist();
+    }
+
+    public static int getInt(String key, int def) {
+        return user.has(key) ? user.get(key).getAsInt() : def;
+    }
+
+    public static void setInt(String key, int value) {
+        user.addProperty(key, value);
         persist();
     }
 
