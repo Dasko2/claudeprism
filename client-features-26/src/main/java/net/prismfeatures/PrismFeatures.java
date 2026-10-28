@@ -99,11 +99,13 @@ public class PrismFeatures implements ClientModInitializer {
         if (client.player == null || client.level == null) {
             nightVisionOn = false;
             zoomActive = false;
+            Extras.reset();
             return;
         }
         safe("night-vision", () -> tickNightVision(client));
         safe("zoom", () -> tickZoom(client));
         safe("point-de-mort", () -> tickDeath(client));
+        safe("extras", Extras::tick);
         safe("menu", () -> {
             if (Compat.screen(client) == null && pressed(client, "menu", Config.key("menu", DEFAULT_KEY_MENU)))
                 Compat.setScreen(client, new FeaturesScreen());

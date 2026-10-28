@@ -214,12 +214,28 @@ public final class Hud {
         }
     };
 
-    public static final List<Element> ELEMENTS = List.of(INFOS, ARMOR, MAIN, OFF, DEATH);
+    private static Element wrap(Extras.Piece p) {
+        return new Element(p.id, p.label, p.toggleKey, p.defX, p.defY) {
+            int width(Minecraft c, boolean preview) { return p.width(preview); }
+            int height(Minecraft c, boolean preview) { return p.height(preview); }
+            void draw(GuiGraphicsExtractor ctx, Minecraft c, int x, int y, boolean preview) { p.draw(new Gfx(ctx), x, y, preview); }
+            boolean hasContent(Minecraft c) { return p.hasContent(); }
+        };
+    }
+
+    public static final List<Element> ELEMENTS = build();
+
+    private static List<Element> build() {
+        List<Element> l = new ArrayList<>(List.of(INFOS, ARMOR, MAIN, OFF, DEATH));
+        for (Extras.Piece p : Extras.PIECES) l.add(wrap(p));
+        return List.copyOf(l);
+    }
 
     /** Affichage en jeu. */
     public static void render(GuiGraphicsExtractor ctx, Minecraft c) {
         int w = ctx.guiWidth();
         int h = ctx.guiHeight();
+        PrismFeatures.safe("viseur", () -> Extras.drawCrosshair(new Gfx(ctx)));
         for (Element e : ELEMENTS) {
             final Element el = e;
             if (!Config.enabled(el.toggleKey)) continue;

@@ -26,14 +26,14 @@ public class FeaturesScreen extends Screen {
     @Override
     protected void init() {
         refreshers.clear();
-        final int w = 200;
         final int h = 20;
         final int gap = 4;
-        final int total = Config.LABELS.size() + 3;
-        final int rows = (total + 1) / 2;
-        final int left = this.width / 2 - w - gap / 2;
-        final int right = this.width / 2 + gap / 2;
-        final int top = Math.max(34, this.height / 2 - (rows * (h + gap)) / 2 - 6);
+        final int total = Config.LABELS.size() + 5;
+        final int cols = total * (h + gap) / 2 > this.height - 90 ? 3 : 2;
+        final int w = cols == 3 ? Math.min(150, (this.width - 20) / 3 - gap) : 200;
+        final int rows = (total + cols - 1) / cols;
+        final int x0 = this.width / 2 - (cols * w + (cols - 1) * gap) / 2;
+        final int top = Math.max(30, this.height / 2 - (rows * (h + gap)) / 2 - 6);
         int index = 0;
 
         for (Map.Entry<String, String> e : Config.LABELS.entrySet()) {
@@ -41,15 +41,25 @@ public class FeaturesScreen extends Screen {
             Button b = Button.builder(label(key), btn -> {
                 Config.toggle(key);
                 btn.setMessage(label(key));
-            }).bounds(index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h).build();
+            }).bounds(x0 + (index % cols) * (w + gap), top + (index / cols) * (h + gap), w, h).build();
             b.active = Config.allowed(key);
             this.addRenderableWidget(b);
             index++;
         }
 
-        index = addKeyButton("nightVision", "Touche night vision", PrismFeatures.DEFAULT_KEY_NIGHT, index, left, right, top, w, h, gap);
-        index = addKeyButton("zoom", "Touche zoom", PrismFeatures.DEFAULT_KEY_ZOOM, index, left, right, top, w, h, gap);
-        index = addKeyButton("menu", "Touche du menu", PrismFeatures.DEFAULT_KEY_MENU, index, left, right, top, w, h, gap);
+        index = addKeyButton("nightVision", "Night vision", PrismFeatures.DEFAULT_KEY_NIGHT, index, cols, x0, top, w, h, gap);
+        index = addKeyButton("zoom", "Zoom", PrismFeatures.DEFAULT_KEY_ZOOM, index, cols, x0, top, w, h, gap);
+        index = addKeyButton("menu", "Menu", PrismFeatures.DEFAULT_KEY_MENU, index, cols, x0, top, w, h, gap);
+
+        this.addRenderableWidget(Button.builder(styleLabel(), btn -> {
+            Config.setInt("crosshairStyle", (Config.getInt("crosshairStyle", 0) + 1) % Extras.CROSS_STYLES.length);
+            btn.setMessage(styleLabel());
+        }).bounds(x0 + (index % cols) * (w + gap), top + (index / cols) * (h + gap), w, h).build());
+        index++;
+        this.addRenderableWidget(Button.builder(colorLabel(), btn -> {
+            Config.setInt("crosshairColor", (Config.getInt("crosshairColor", 0) + 1) % Extras.CROSS_COLORS.length);
+            btn.setMessage(colorLabel());
+        }).bounds(x0 + (index % cols) * (w + gap), top + (index / cols) * (h + gap), w, h).build());
 
         final int below = top + rows * (h + gap) + 6;
         this.addRenderableWidget(Button.builder(Component.literal("Placer les éléments à l'écran"),
@@ -60,19 +70,27 @@ public class FeaturesScreen extends Screen {
         PrismFeatures.onBindingChanged = () -> refreshers.forEach(Runnable::run);
     }
 
-    private int addKeyButton(String id, String name, int def, int index, int left, int right, int top, int w, int h, int gap) {
+    private static Component styleLabel() {
+        return Component.literal("Viseur : " + Extras.CROSS_STYLES[Math.floorMod(Config.getInt("crosshairStyle", 0), Extras.CROSS_STYLES.length)]);
+    }
+
+    private static Component colorLabel() {
+        return Component.literal("Couleur viseur : " + Extras.CROSS_COLORS[Math.floorMod(Config.getInt("crosshairColor", 0), Extras.CROSS_COLORS.length)]);
+    }
+
+    private int addKeyButton(String id, String name, int def, int index, int cols, int x0, int top, int w, int h, int gap) {
         Button b = Button.builder(keyLabel(id, name, def), btn -> {
             PrismFeatures.listening = id;
             refreshers.forEach(Runnable::run);
-        }).bounds(index % 2 == 0 ? left : right, top + (index / 2) * (h + gap), w, h).build();
+        }).bounds(x0 + (index % cols) * (w + gap), top + (index / cols) * (h + gap), w, h).build();
         refreshers.add(() -> b.setMessage(keyLabel(id, name, def)));
         this.addRenderableWidget(b);
         return index + 1;
     }
 
     private static Component keyLabel(String id, String name, int def) {
-        if (id.equals(PrismFeatures.listening)) return Component.literal(name + " : appuyez sur une touche...");
-        return Component.literal(name + " : [" + PrismFeatures.keyName(Config.key(id, def)) + "]");
+        if (id.equals(PrismFeatures.listening)) return Component.literal("Touche " + name + " : ...");
+        return Component.literal("Touche " + name + " : [" + PrismFeatures.keyName(Config.key(id, def)) + "]");
     }
 
     private static Component label(String key) {
