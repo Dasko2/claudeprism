@@ -30,8 +30,9 @@ public final class Config {
     public static final String COMBO = "combo";
     public static final String DAMAGE = "damage";
     public static final String COMPASS = "compass";
+    public static final String FREELOOK = "freelook";
     /** Fonctions nouvelles désactivées au départ pour ne pas encombrer l'écran. */
-    private static final java.util.Set<String> OFF_BY_DEFAULT = java.util.Set.of(CPS, KEYS, EFFECTS, COMBO, DAMAGE, COMPASS);
+    private static final java.util.Set<String> OFF_BY_DEFAULT = java.util.Set.of(CPS, KEYS, EFFECTS, COMBO, DAMAGE, COMPASS, FREELOOK);
 
     /** clé -> libellé affiché dans le menu */
     public static final Map<String, String> LABELS = new LinkedHashMap<>();
@@ -50,6 +51,7 @@ public final class Config {
         LABELS.put(COMBO, "Combo");
         LABELS.put(DAMAGE, "Dégâts reçus");
         LABELS.put(COMPASS, "Boussole");
+        LABELS.put(FREELOOK, "Freelook");
     }
 
     private static JsonObject launcher = new JsonObject();

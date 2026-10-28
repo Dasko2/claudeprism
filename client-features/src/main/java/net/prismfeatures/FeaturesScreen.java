@@ -27,7 +27,7 @@ public class FeaturesScreen extends ScreenBase {
         refreshers.clear();
         final int h = 20;
         final int gap = 4;
-        final int total = Config.LABELS.size() + 5; // + 3 touches + 2 réglages du viseur
+        final int total = Config.LABELS.size() + 6; // + 3 touches + 2 réglages du viseur
         final int cols = total * (h + gap) / 2 > this.height - 90 ? 3 : 2;
         final int w = cols == 3 ? Math.min(150, (this.width - 20) / 3 - gap) : 200;
         final int rows = (total + cols - 1) / cols;
@@ -49,6 +49,7 @@ public class FeaturesScreen extends ScreenBase {
 
         index = addKeyButton("nightVision", "Night vision", PrismFeatures.DEFAULT_KEY_NIGHT, index, cols, x0, top, w, h, gap);
         index = addKeyButton("zoom", "Zoom", PrismFeatures.DEFAULT_KEY_ZOOM, index, cols, x0, top, w, h, gap);
+        index = addKeyButton("freelook", "Freelook", PrismFeatures.DEFAULT_KEY_FREELOOK, index, cols, x0, top, w, h, gap);
         index = addKeyButton("menu", "Menu", PrismFeatures.DEFAULT_KEY_MENU, index, cols, x0, top, w, h, gap);
 
         final ButtonWidget[] style = new ButtonWidget[1];
