@@ -60,7 +60,7 @@ public final class Env {
         var p = mc().player;
         if (p == null) return out;
         for (MobEffectInstance i : p.getActiveEffects())
-            out.add(new Effect(i.getEffect().value().getDisplayName().getString(), i.getAmplifier(), i.isInfinite() ? -1 : i.getDuration()));
+            out.add(new Effect(i.getEffect().value().getDisplayName().getString(), i.getAmplifier(), i.getDuration()));
         return out;
     }
 }
