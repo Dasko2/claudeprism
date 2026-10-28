@@ -36,12 +36,12 @@ public final class Env {
             default -> InputConstants.KEY_SPACE;
         };
         Minecraft c = mc();
-        return c.screen == null && Compat.keyPressed(c, code);
+        return Compat.screen(c) == null && Compat.keyPressed(c, code);
     }
 
     public static boolean aimingAtEntity() {
         Minecraft c = mc();
-        return c.screen == null && c.hitResult != null && c.hitResult.getType() == HitResult.Type.ENTITY;
+        return Compat.screen(c) == null && c.hitResult != null && c.hitResult.getType() == HitResult.Type.ENTITY;
     }
 
     public static boolean justHurt() { return mc().player != null && mc().player.hurtTime > 0; }
