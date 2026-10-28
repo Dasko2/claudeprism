@@ -28,4 +28,10 @@ public abstract class HandledScreenMixin<T extends ScreenHandler> extends Screen
     private void prism$shulkerPreview(MatrixStack context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (this.focusedSlot != null) PrismFeatures.onSlotHover(new Gfx(context), this.focusedSlot, mouseX, mouseY);
     }
+
+    /** Deuxième accroche : l'inventaire du joueur / créatif passent par ici même si render est redéfini. */
+    @Inject(method = "drawMouseoverTooltip", at = @At("HEAD"), require = 0)
+    private void prism$shulkerPreview2(MatrixStack context, int mouseX, int mouseY, CallbackInfo ci) {
+        if (this.focusedSlot != null) PrismFeatures.onSlotHover(new Gfx(context), this.focusedSlot, mouseX, mouseY);
+    }
 }

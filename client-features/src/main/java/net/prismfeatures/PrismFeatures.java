@@ -195,9 +195,14 @@ public class PrismFeatures implements ClientModInitializer {
     }
 
     /** Survol d'un shulker dans un inventaire : son contenu s'affiche en grille. */
+    private static long lastHoverDraw = 0L;
+
     public static void onSlotHover(Gfx ctx, Slot slot, int mouseX, int mouseY) {
         ItemStack stack = slot.getStack();
         if (!isShulker(stack)) return;
+        long now = System.nanoTime();
+        if (now - lastHoverDraw < 3_000_000L) return; // déjà dessiné pendant cette image
+        lastHoverDraw = now;
         onShulkerHover(ctx, stack, mouseX, mouseY);
     }
 
