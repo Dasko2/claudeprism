@@ -77,7 +77,10 @@
 #include "ui/setupwizard/SetupWizard.h"
 #include "ui/setupwizard/ThemeWizardPage.h"
 
+#include <QMessageBox>
 #include "ui/dialogs/CustomMessageBox.h"
+#include "ui/dialogs/InstallLoaderDialog.h"
+#include "minecraft/PackProfile.h"
 
 #include "ui/pagedialog/PageDialog.h"
 
@@ -926,6 +929,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("FeatureShulkerPreview", true);
         m_settings->registerSetting("FeatureHud", true);
         m_settings->registerSetting("AutoWorldBackup", true);
+        m_settings->registerSetting("AskInstallFabric", true);
 
         // Custom Technic Client ID
         m_settings->registerSetting("TechnicClientID", "");
@@ -1575,6 +1579,27 @@ bool Application::launch(MinecraftInstance* instance,
     } else if (instance->canLaunch()) {
         if (m_mainWindow && !m_mainWindow->saveInstancePages(instance)) {
             return false;
+        }
+        if (m_mainWindow && ClientFeatures::loaderOf(instance).isEmpty() && settings()->get("AskInstallFabric").toBool()) {
+            const QString mc = instance->getPackProfile()->getComponentVersion("net.minecraft");
+            const QStringList parts = mc.split('.');
+            const bool supported = parts.size() >= 2 && ((parts[0] == "1" && parts[1].toInt() >= 19) || parts[0].toInt() >= 26);
+            if (supported) {
+                QMessageBox box(m_mainWindow);
+                box.setWindowTitle(tr("Fonctionnalités intégrées"));
+                box.setText(tr("Cette instance n'a pas de mod loader : night vision, zoom, HUD et le reste ne seront pas actifs.\n"
+                               "Installer Fabric maintenant (aucun mod à gérer, c'est automatique) ?"));
+                auto* yes = box.addButton(tr("Installer Fabric"), QMessageBox::AcceptRole);
+                box.addButton(tr("Pas maintenant"), QMessageBox::RejectRole);
+                auto* never = box.addButton(tr("Ne plus demander"), QMessageBox::DestructiveRole);
+                box.exec();
+                if (box.clickedButton() == yes) {
+                    InstallLoaderDialog dialog(instance->getPackProfile(), "net.fabricmc.fabric-loader", m_mainWindow);
+                    dialog.exec();
+                } else if (box.clickedButton() == never) {
+                    settings()->set("AskInstallFabric", false);
+                }
+            }
         }
         ClientFeatures::apply(instance);
         ClientFeatures::backupLatestWorld(instance);
