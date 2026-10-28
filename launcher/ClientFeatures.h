@@ -19,6 +19,9 @@ QString loaderOf(MinecraftInstance* instance);
 /// Écrit la configuration du mod et nettoie une éventuelle ancienne copie visible. Avant le lancement.
 void apply(MinecraftInstance* instance);
 
+/// Sauvegarde le monde le plus récemment joué (dossier world-backups, 5 copies conservées). Avant le lancement.
+void backupLatestWorld(MinecraftInstance* instance);
+
 /// Résumé lisible de l'état (agent trouvé ? loader ? version ?) pour le diagnostic.
 QString statusText(MinecraftInstance* instance);
 

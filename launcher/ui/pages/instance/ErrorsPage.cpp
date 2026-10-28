@@ -29,6 +29,7 @@
 
 #include "DesktopServices.h"
 #include "MessageLevel.h"
+#include "settings/SettingsObject.h"
 
 namespace {
 constexpr int kMaxCards = 80;
@@ -356,6 +357,39 @@ QList<ErrorsPage::Entry> ErrorsPage::collectCrashReport(const QString& logPath) 
     return out;
 }
 
+
+namespace {
+struct Advice {
+    QString text;
+    QString fixLabel;  // vide : pas de bouton
+    int fix = 0;       // 1 = plus de mémoire, 2 = ouvrir le dossier mods
+};
+
+/// Aide sans IA : reconnaît les problèmes courants dans le texte de l'erreur.
+Advice adviceFor(const QString& all)
+{
+    auto has = [&](const char* needle) { return all.contains(QLatin1String(needle), Qt::CaseInsensitive); };
+    if (has("OutOfMemoryError") || has("GC overhead limit") || has("Java heap space"))
+        return { QObject::tr("Le jeu manque de mémoire. Augmentez la mémoire allouée à cette instance."), QObject::tr("Allouer 6 Go"), 1 };
+    if (has("UnsupportedClassVersionError") || has("class file version") || has("requires Java"))
+        return { QObject::tr("Mauvaise version de Java pour cette version de Minecraft (1.20.5 et plus : Java 21, 26.x : Java 25, avant : Java 17). "
+                             "Réglez-la dans Paramètres de l'instance > Java."), {}, 0 };
+    if (has("Mixin apply failed") || has("MixinApplyError") || has("InvalidInjectionException") || has("Incompatible mod set")
+        || has("requires version") || has("depends on") || has("Mod resolution failed"))
+        return { QObject::tr("Un mod est incompatible avec cette version ou avec un autre mod. Retirez le dernier mod ajouté ou mettez-le à jour."),
+                 QObject::tr("Ouvrir le dossier des mods"), 2 };
+    if (has("Failed to bind to port") || has("Address already in use"))
+        return { QObject::tr("Le port est déjà utilisé : un autre serveur ou une autre instance tourne encore. Fermez-la puis réessayez."), {}, 0 };
+    if (has("Could not reserve enough space") || has("Invalid maximum heap size"))
+        return { QObject::tr("La mémoire demandée dépasse celle de votre ordinateur. Baissez la mémoire allouée."), QObject::tr("Allouer 4 Go"), 1 };
+    if (has("UnknownHostException") || has("Connection timed out") || has("Failed to download"))
+        return { QObject::tr("Problème de connexion Internet ou de pare-feu. Vérifiez votre réseau puis relancez."), {}, 0 };
+    if (has("GLFW error") || has("OpenGL") || has("pixel format"))
+        return { QObject::tr("Problème de pilote graphique. Mettez à jour le pilote de votre carte graphique."), {}, 0 };
+    return {};
+}
+}  // namespace
+
 QWidget* ErrorsPage::createCard(const Entry& entry)
 {
     auto* card = new QFrame();
@@ -388,6 +422,31 @@ QWidget* ErrorsPage::createCard(const Entry& entry)
     title->setWordWrap(true);
     title->setTextInteractionFlags(Qt::TextSelectableByMouse);
     layout->addWidget(title);
+
+    const Advice advice = adviceFor(entry.title + "\n" + entry.details);
+    if (!advice.text.isEmpty()) {
+        auto* tip = new QLabel(tr("Piste : ") + advice.text, card);
+        tip->setWordWrap(true);
+        layout->addWidget(tip);
+        if (advice.fix != 0) {
+            auto* fix = new QPushButton(advice.fixLabel, card);
+            layout->addWidget(fix, 0, Qt::AlignLeft);
+            const int kind = advice.fix;
+            const int mem = advice.fixLabel.contains("4") ? 4096 : 6144;
+            connect(fix, &QPushButton::clicked, card, [this, kind, mem, fix] {
+                if (kind == 1) {
+                    auto s = m_instance->settings();
+                    s->set("OverrideMemory", true);
+                    s->set("MaxMemAlloc", mem);
+                    s->set("MinMemAlloc", 512);
+                    fix->setText(tr("Mémoire modifiée, relancez le jeu"));
+                    fix->setEnabled(false);
+                } else {
+                    DesktopServices::openPath(QDir(m_instance->gameRoot()).filePath("mods"));
+                }
+            });
+        }
+    }
 
     const QString fullText = entry.details.isEmpty() ? entry.title : entry.title + "\n" + entry.details;
     connect(copy, &QToolButton::clicked, card, [fullText] { QGuiApplication::clipboard()->setText(fullText); });

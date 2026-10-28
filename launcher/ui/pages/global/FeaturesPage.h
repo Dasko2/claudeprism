@@ -27,4 +27,5 @@ class FeaturesPage : public QWidget, public BasePage {
     QCheckBox* m_nightVision = nullptr;
     QCheckBox* m_shulker = nullptr;
     QCheckBox* m_hud = nullptr;
+    QCheckBox* m_backup = nullptr;
 };

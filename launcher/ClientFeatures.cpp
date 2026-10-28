@@ -2,6 +2,7 @@
 #include <QMap>
 #include "ClientFeatures.h"
 
+#include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -102,6 +103,27 @@ void apply(MinecraftInstance* instance)
     QFile out(QDir(configDir).filePath("prismfeatures.json"));
     if (out.open(QIODevice::WriteOnly | QIODevice::Truncate))
         out.write(QJsonDocument(config).toJson(QJsonDocument::Indented));
+}
+
+void backupLatestWorld(MinecraftInstance* instance)
+{
+    if (!instance || !APPLICATION->settings()->get("AutoWorldBackup").toBool())
+        return;
+    QDir saves(QDir(instance->gameRoot()).filePath("saves"));
+    const auto worlds = saves.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Time);
+    if (worlds.isEmpty())
+        return;
+    const QFileInfo world = worlds.first();
+    const QString root = QDir(instance->instanceRoot()).filePath("world-backups");
+    FS::ensureFolderPathExists(root);
+    const QString dst = QDir(root).filePath(world.fileName() + "-" + QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss"));
+    FS::copy(world.absoluteFilePath(), dst)();
+
+    // on garde les 5 plus récentes
+    QDir backups(root);
+    const auto all = backups.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Time);
+    for (int i = 5; i < all.size(); ++i)
+        QDir(all[i].absoluteFilePath()).removeRecursively();
 }
 
 QString statusText(MinecraftInstance* instance)

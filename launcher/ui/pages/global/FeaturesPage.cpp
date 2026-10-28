@@ -26,14 +26,15 @@ FeaturesPage::FeaturesPage(QWidget* parent) : QWidget(parent)
     m_nightVision = new QCheckBox(tr("Night vision (touche modifiable dans le menu en jeu)"), this);
     m_shulker = new QCheckBox(tr("Vision des shulkers : contenu affiché en survolant le shulker dans l'inventaire"), this);
     m_hud = new QCheckBox(tr("Affichages à l'écran : infos, armure, objets en main, point de mort"), this);
-    for (auto* box : { m_master, m_nightVision, m_shulker, m_hud })
+    m_backup = new QCheckBox(tr("Sauvegarder automatiquement le dernier monde joué avant chaque lancement (5 copies conservées)"), this);
+    for (auto* box : { m_master, m_nightVision, m_shulker, m_hud, m_backup })
         layout->addWidget(box);
 
     connect(m_master, &QCheckBox::toggled, this, &FeaturesPage::updateEnabledState);
 
     auto* status = new QLabel(this);
     status->setWordWrap(true);
-    status->setText(tr("Important : elles nécessitent une instance Fabric ou Quilt (onglet « Version modée »), en Minecraft 1.21.11 pour l'instant. "
+    status->setText(tr("Important : elles nécessitent une instance Fabric ou Quilt (onglet « Version modée »), de Minecraft 1.19 à 26.3. "
                        "Sur une instance sans mod loader (Vanilla), elles ne sont pas actives."));
     layout->addWidget(status);
     layout->addStretch(1);
@@ -48,6 +49,7 @@ void FeaturesPage::load()
     m_nightVision->setChecked(s->get("FeatureNightVision").toBool());
     m_shulker->setChecked(s->get("FeatureShulkerPreview").toBool());
     m_hud->setChecked(s->get("FeatureHud").toBool());
+    m_backup->setChecked(s->get("AutoWorldBackup").toBool());
     updateEnabledState();
 }
 
@@ -65,5 +67,6 @@ bool FeaturesPage::apply()
     s->set("FeatureNightVision", m_nightVision->isChecked());
     s->set("FeatureShulkerPreview", m_shulker->isChecked());
     s->set("FeatureHud", m_hud->isChecked());
+    s->set("AutoWorldBackup", m_backup->isChecked());
     return true;
 }

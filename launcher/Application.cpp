@@ -925,6 +925,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("FeatureNightVision", true);
         m_settings->registerSetting("FeatureShulkerPreview", true);
         m_settings->registerSetting("FeatureHud", true);
+        m_settings->registerSetting("AutoWorldBackup", true);
 
         // Custom Technic Client ID
         m_settings->registerSetting("TechnicClientID", "");
@@ -1576,6 +1577,7 @@ bool Application::launch(MinecraftInstance* instance,
             return false;
         }
         ClientFeatures::apply(instance);
+        ClientFeatures::backupLatestWorld(instance);
         QMutexLocker locker(&m_instanceExtrasMutex);
         auto& extras = m_instanceExtras[instance->id()];
         auto* window = extras.window;
