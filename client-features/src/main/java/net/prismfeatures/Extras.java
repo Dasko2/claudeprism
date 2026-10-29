@@ -189,8 +189,15 @@ public final class Extras {
         }
     };
 
+    public static final Piece DAYS = new Piece("days", "Jours", Config.DAYS, 0.0, 0.2) {
+        private String text() { return "Jour " + Env.day(); }
+        public int width(boolean p) { return Env.textWidth(text()); }
+        public int height(boolean p) { return 10; }
+        public void draw(Gfx g, int x, int y, boolean p) { g.text(text(), x, y, 0xFFFFE08A); }
+    };
+
     /** Tous les éléments, dans l'ordre de leur ajout à l'éditeur. */
-    public static final List<Piece> PIECES = List.of(CPS, KEYS, EFFECTS, COMBO, DAMAGE, COMPASS);
+    public static final List<Piece> PIECES = List.of(CPS, KEYS, EFFECTS, COMBO, DAMAGE, COMPASS, DAYS);
 
     // ------------------------------------------------------------------ viseur
     public static final String[] CROSS_STYLES = { "Normal", "Croix", "Point", "Cercle", "Croix + point" };

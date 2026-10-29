@@ -30,8 +30,9 @@ public final class Config {
     public static final String COMBO = "combo";
     public static final String DAMAGE = "damage";
     public static final String COMPASS = "compass";
+    public static final String DAYS = "days";
     /** Fonctions nouvelles désactivées au départ pour ne pas encombrer l'écran. */
-    private static final java.util.Set<String> OFF_BY_DEFAULT = java.util.Set.of(CPS, KEYS, EFFECTS, COMBO, DAMAGE, COMPASS);
+    private static final java.util.Set<String> OFF_BY_DEFAULT = java.util.Set.of(CPS, KEYS, EFFECTS, COMBO, DAMAGE, COMPASS, DAYS);
 
     /** clé -> libellé affiché dans le menu */
     public static final Map<String, String> LABELS = new LinkedHashMap<>();
@@ -50,6 +51,7 @@ public final class Config {
         LABELS.put(COMBO, "Combo");
         LABELS.put(DAMAGE, "Dégâts reçus");
         LABELS.put(COMPASS, "Boussole");
+        LABELS.put(DAYS, "Compteur de jours");
     }
 
     private static JsonObject launcher = new JsonObject();
@@ -141,6 +143,11 @@ public final class Config {
         persist();
     }
 
+    /** Taille pendant le glissement du carré de redimensionnement (sans arrondi à 0.1). */
+    public static void setScaleLive(String id, double s, boolean save) {
+        user.addProperty("pos." + id + ".s", Math.max(0.5, Math.min(3.0, Math.round(s * 20) / 20.0)));
+        if (save) persist();
+    }
     public static void resetPositions() {
         for (String k : new java.util.ArrayList<>(user.keySet())) if (k.startsWith("pos.")) user.remove(k);
         persist();

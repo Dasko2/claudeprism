@@ -14,6 +14,9 @@ public class HudEditorScreen extends Screen {
     private int grabDx = 0;
     private int grabDy = 0;
     private boolean wasDown = false;
+    private Hud.Element resizing = null;
+    private int rRight = 0;
+    private int rBottom = 0;
 
     public HudEditorScreen(Screen parent) {
         super(Component.literal("Placer les éléments"));
@@ -24,26 +27,36 @@ public class HudEditorScreen extends Screen {
     protected void init() {
         final int bw = 90;
         final int y = this.height - 28;
-        final int x0 = this.width / 2 - (4 * bw + 3 * 4) / 2;
-        this.addRenderableWidget(Button.builder(Component.literal("Taille -"), b -> Config.setScale(selected.id, selected.scale() - 0.1))
-                .bounds(x0, y, bw, 20).build());
-        this.addRenderableWidget(Button.builder(Component.literal("Taille +"), b -> Config.setScale(selected.id, selected.scale() + 0.1))
-                .bounds(x0 + (bw + 4), y, bw, 20).build());
+        final int x0 = this.width / 2 - (2 * bw + 4) / 2;
         this.addRenderableWidget(Button.builder(Component.literal("Réinitialiser"), b -> Config.resetPositions())
-                .bounds(x0 + 2 * (bw + 4), y, bw, 20).build());
+                .bounds(x0, y, bw, 20).build());
         this.addRenderableWidget(Button.builder(Component.literal("Terminé"), b -> this.onClose())
-                .bounds(x0 + 3 * (bw + 4), y, bw, 20).build());
+                .bounds(x0 + (bw + 4), y, bw, 20).build());
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         super.extractRenderState(ctx, mouseX, mouseY, delta);
         Minecraft c = Minecraft.getInstance();
-        ctx.centeredText(this.font, Component.literal("Glissez chaque élément à la souris. Taille -/+ agit sur l'élément sélectionné : " + selected.label + " (x" + String.format("%.1f", selected.scale()) + ")"), this.width / 2, 12, 0xFFFFFFFF);
+        ctx.centeredText(this.font, Component.literal("Glissez un élément pour le déplacer, tirez le carré en haut à gauche pour changer sa taille"), this.width / 2, 12, 0xFFFFFFFF);
 
         // état de la souris (sans dépendre de la signature des événements de souris)
         boolean down = Compat.leftMouseDown(c);
         if (down && !wasDown && mouseY < this.height - 36) {
+            for (Hud.Element e : Hud.ELEMENTS) {
+                int hx = e.x(this.width, c, true);
+                int hy = e.y(this.height, c, true);
+                if (mouseX >= hx - 7 && mouseX <= hx + 3 && mouseY >= hy - 7 && mouseY <= hy + 3) {
+                    resizing = e; // carré de redimensionnement (haut gauche) ; le coin bas droit reste fixe
+                    selected = e;
+                    rRight = hx + e.w(c);
+                    rBottom = hy + e.h(c);
+                    dragging = null;
+                    break;
+                }
+            }
+        }
+        if (down && !wasDown && resizing == null && mouseY < this.height - 36) {
             for (Hud.Element e : Hud.ELEMENTS) {
                 int x = e.x(this.width, c, true);
                 int y = e.y(this.height, c, true);
@@ -54,6 +67,24 @@ public class HudEditorScreen extends Screen {
                     grabDy = mouseY - y;
                 }
             }
+        }
+        if (down && resizing != null) {
+            Hud.Element e = resizing;
+            double baseW = Math.max(1, e.width(c, true));
+            double baseH = Math.max(1, e.height(c, true));
+            double ns = (((rRight - mouseX) / baseW) + ((rBottom - mouseY) / baseH)) / 2.0;
+            Config.setScaleLive(e.id, ns, false);
+            int w = e.w(c);
+            int h = e.h(c);
+            double fx = Math.min(1.0, Math.max(0.0, (rRight - w) / (double) Math.max(1, this.width - w)));
+            double fy = Math.min(1.0, Math.max(0.0, (rBottom - h) / (double) Math.max(1, this.height - h)));
+            Config.setPos(e.id, fx, fy, false);
+        }
+        if (!down && wasDown && resizing != null) {
+            double[] p = Config.pos(resizing.id, 0, 0);
+            Config.setScaleLive(resizing.id, Config.scale(resizing.id), true);
+            Config.setPos(resizing.id, p[0], p[1], true);
+            resizing = null;
         }
         if (down && dragging != null) {
             int freeW = Math.max(1, this.width - dragging.w(c));
@@ -81,6 +112,8 @@ public class HudEditorScreen extends Screen {
             ctx.fill(x - 3, y + h + 2, x + w + 3, y + h + 3, color);
             ctx.fill(x - 3, y - 3, x - 2, y + h + 3, color);
             ctx.fill(x + w + 2, y - 3, x + w + 3, y + h + 3, color);
+            ctx.fill(x - 7, y - 7, x + 3, y + 3, 0xFFFFFFFF);
+            ctx.fill(x - 6, y - 6, x + 2, y + 2, color);
             e.drawPreview(ctx, c, x, y);
             ctx.text(this.font, e.label, x, y - 13, 0xFFBBAAFF, true);
         }

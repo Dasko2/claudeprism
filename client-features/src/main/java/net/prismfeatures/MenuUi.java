@@ -169,7 +169,8 @@ public final class MenuUi {
                 new String[] { Config.EFFECTS, "Effets de potion actifs" },
                 new String[] { Config.COMBO, "Coups enchaînés" },
                 new String[] { Config.DAMAGE, "Dernier coup reçu" },
-                new String[] { Config.COMPASS, "Barre de direction" }), cx, top, cw, cw >= 300 ? 2 : 1);
+                new String[] { Config.COMPASS, "Barre de direction" },
+                new String[] { Config.DAYS, "Numéro du jour du monde" }), cx, top, cw, cw >= 300 ? 2 : 1);
             case 2 -> {
                 cycleRow("Style", Extras.CROSS_STYLES, "crosshairStyle", cx, top, cw);
                 cycleRow("Couleur", Extras.CROSS_COLORS, "crosshairColor", cx, top + 30, cw);

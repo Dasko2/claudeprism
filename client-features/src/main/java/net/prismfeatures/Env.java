@@ -52,6 +52,11 @@ public final class Env {
         return p == null ? 0f : p.getHealth() + p.getAbsorptionAmount();
     }
 
+    public static long day() {
+        var w = mc().world;
+        return w == null ? 1 : w.getTimeOfDay() / 24000L + 1;
+    }
+
     public static float yaw() {
         PlayerEntity p = mc().player;
         return p == null ? 0f : p.getYaw();

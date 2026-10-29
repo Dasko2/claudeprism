@@ -51,6 +51,11 @@ public final class Env {
         return p == null ? 0f : p.getHealth() + p.getAbsorptionAmount();
     }
 
+    public static long day() {
+        var l = mc().level;
+        return l == null ? 1 : l.getDayTime() / 24000L + 1;
+    }
+
     public static float yaw() { return mc().player == null ? 0f : mc().player.getYRot(); }
 
     public static int textWidth(String s) { return mc().font.width(s); }
