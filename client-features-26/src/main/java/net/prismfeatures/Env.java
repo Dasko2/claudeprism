@@ -53,7 +53,7 @@ public final class Env {
 
     public static long day() {
         var l = mc().level;
-        return l == null ? 1 : l.getDayTime() / 24000L + 1;
+        return l == null ? 1 : l.getGameTime() / 24000L + 1;
     }
 
     public static float yaw() { return mc().player == null ? 0f : mc().player.getYRot(); }
