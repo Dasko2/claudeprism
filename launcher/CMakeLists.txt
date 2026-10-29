@@ -1260,6 +1260,17 @@ add_library(Launcher_logic STATIC ${LOGIC_SOURCES} ${LAUNCHER_SOURCES} ${LAUNCHE
 target_include_directories(Launcher_logic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(Launcher_logic PUBLIC LAUNCHER_APPLICATION)
 
+# Identifiant d'application Discord intégré (program_info/discord_client_id.txt) : aucun réglage pour l'utilisateur
+set(DISCORD_ID_FILE "${CMAKE_SOURCE_DIR}/program_info/discord_client_id.txt")
+if(EXISTS "${DISCORD_ID_FILE}")
+    file(READ "${DISCORD_ID_FILE}" Launcher_DiscordClientId)
+    string(STRIP "${Launcher_DiscordClientId}" Launcher_DiscordClientId)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${DISCORD_ID_FILE}")
+    if(Launcher_DiscordClientId)
+        target_compile_definitions(Launcher_logic PRIVATE "PRISM_DISCORD_CLIENT_ID=\"${Launcher_DiscordClientId}\"")
+    endif()
+endif()
+
 if(${Launcher_USE_PCH})
     target_precompile_headers(Launcher_logic PRIVATE ${PRECOMPILED_HEADERS})
 endif()

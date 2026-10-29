@@ -57,6 +57,10 @@ void DiscordPresence::start(MinecraftInstance* instance)
 {
     auto* s = APPLICATION->settings();
     m_clientId = s->get("DiscordClientId").toString().trimmed();
+#ifdef PRISM_DISCORD_CLIENT_ID
+    if (m_clientId.isEmpty())
+        m_clientId = QStringLiteral(PRISM_DISCORD_CLIENT_ID);
+#endif
     if (!s->get("DiscordRpc").toBool() || m_clientId.isEmpty() || !instance)
         return;
     stop();

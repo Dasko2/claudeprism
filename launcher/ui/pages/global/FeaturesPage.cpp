@@ -30,10 +30,9 @@ FeaturesPage::FeaturesPage(QWidget* parent) : QWidget(parent)
     m_backup = new QCheckBox(tr("Sauvegarder automatiquement le dernier monde joué avant chaque lancement (5 copies conservées)"), this);
     m_discord = new QCheckBox(tr("Afficher sur Discord à quoi je joue (version de Minecraft et serveur)"), this);
     m_discordId = new QLineEdit(this);
-    m_discordId->setPlaceholderText(tr("Identifiant d'application Discord (voir discord.com/developers/applications)"));
+    m_discordId->hide();  // l'identifiant est intégré ; le réglage reste possible via settings
     for (auto* box : { m_master, m_nightVision, m_shulker, m_hud, m_backup, m_discord })
         layout->addWidget(box);
-    layout->addWidget(m_discordId);
 
     connect(m_master, &QCheckBox::toggled, this, &FeaturesPage::updateEnabledState);
 
