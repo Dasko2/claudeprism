@@ -31,7 +31,6 @@ public class PrismFeatures implements ClientModInitializer {
 
     public static final int DEFAULT_KEY_NIGHT = GLFW.GLFW_KEY_N;
     public static final int DEFAULT_KEY_ZOOM = GLFW.GLFW_KEY_C;
-    public static final int DEFAULT_KEY_FREELOOK = 342; // Alt gauche
     public static final int DEFAULT_KEY_MENU = GLFW.GLFW_KEY_RIGHT_SHIFT;
 
     private static final Set<String> broken = new HashSet<>();
@@ -108,15 +107,12 @@ public class PrismFeatures implements ClientModInitializer {
             nightVisionOn = false;
             zoomActive = false;
             Extras.reset();
-            Freelook.set(false);
             return;
         }
         safe("night-vision", () -> tickNightVision(client));
         safe("zoom", () -> tickZoom(client));
         safe("point-de-mort", () -> tickDeath(client));
         safe("extras", Extras::tick);
-        safe("freelook", () -> Freelook.set(Config.enabled(Config.FREELOOK) && client.currentScreen == null && listening == null
-                && keyDown(client, Config.key("freelook", DEFAULT_KEY_FREELOOK))));
         safe("menu", () -> {
             if (client.currentScreen == null && pressed(client, "menu", Config.key("menu", DEFAULT_KEY_MENU)))
                 client.setScreen(new FeaturesScreen());

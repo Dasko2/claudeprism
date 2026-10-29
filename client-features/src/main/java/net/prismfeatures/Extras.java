@@ -202,9 +202,12 @@ public final class Extras {
     public static void drawCrosshair(Gfx g) {
         int style = Config.getInt("crosshairStyle", 0);
         if (style == 0) return;
-        int color = CROSS_RGB[Math.floorMod(Config.getInt("crosshairColor", 0), CROSS_RGB.length)];
-        int cx = g.width() / 2;
-        int cy = g.height() / 2;
+        drawCrosshairAt(g, g.width() / 2, g.height() / 2, style, Config.getInt("crosshairColor", 0));
+    }
+
+    /** Dessine un viseur de style/couleur donnés (sert aussi à l'aperçu du menu). */
+    public static void drawCrosshairAt(Gfx g, int cx, int cy, int style, int colorIndex) {
+        int color = CROSS_RGB[Math.floorMod(colorIndex, CROSS_RGB.length)];
         if (style == 1 || style == 4) {
             g.fill(cx - 6, cy, cx - 2, cy + 1, color);
             g.fill(cx + 3, cy, cx + 7, cy + 1, color);
