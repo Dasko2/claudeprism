@@ -950,6 +950,8 @@ SET(LAUNCHER_SOURCES
     ui/pages/global/FeaturesPage.h
     ClientFeatures.cpp
     ClientFeatures.h
+    DiscordPresence.cpp
+    DiscordPresence.h
     ui/pages/global/APIPage.cpp
     ui/pages/global/APIPage.h
 

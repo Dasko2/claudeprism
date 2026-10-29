@@ -57,6 +57,16 @@ public final class Config {
     private static JsonObject launcher = new JsonObject();
     private static JsonObject user = new JsonObject();
 
+    /** Écrit où le joueur se trouve, pour que le launcher l'affiche sur Discord. */
+    public static void writeStatus(String server) {
+        try {
+            JsonObject o = new JsonObject();
+            o.addProperty("server", server);
+            Files.writeString(dir().resolve("prismfeatures-status.json"), new Gson().toJson(o));
+        } catch (Exception ignored) {
+        }
+    }
+
     private static Path dir() {
         return FabricLoader.getInstance().getConfigDir();
     }

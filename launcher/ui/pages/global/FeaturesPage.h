@@ -28,4 +28,6 @@ class FeaturesPage : public QWidget, public BasePage {
     QCheckBox* m_shulker = nullptr;
     QCheckBox* m_hud = nullptr;
     QCheckBox* m_backup = nullptr;
+    QCheckBox* m_discord = nullptr;
+    class QLineEdit* m_discordId = nullptr;
 };

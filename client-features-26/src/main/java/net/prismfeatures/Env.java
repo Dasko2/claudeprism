@@ -51,6 +51,15 @@ public final class Env {
         return p == null ? 0f : p.getHealth() + p.getAbsorptionAmount();
     }
 
+    /** "" hors du jeu, "Solo" en solo, sinon l'adresse du serveur. */
+    public static String server() {
+        var c = mc();
+        if (c.level == null) return "";
+        var e = c.getCurrentServer();
+        if (e != null) return e.ip;
+        return c.getSingleplayerServer() != null ? "Solo" : "";
+    }
+
     public static long day() {
         var l = mc().level;
         return l == null ? 1 : l.getGameTime() / 24000L + 1;

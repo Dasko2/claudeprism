@@ -4,6 +4,7 @@
 #include <QCheckBox>
 #include <QFileInfo>
 #include <QLabel>
+#include <QLineEdit>
 #include <QVBoxLayout>
 
 #include "Application.h"
@@ -27,8 +28,12 @@ FeaturesPage::FeaturesPage(QWidget* parent) : QWidget(parent)
     m_shulker = new QCheckBox(tr("Vision des shulkers : contenu affiché en survolant le shulker dans l'inventaire"), this);
     m_hud = new QCheckBox(tr("Affichages à l'écran : infos, armure, objets en main, point de mort"), this);
     m_backup = new QCheckBox(tr("Sauvegarder automatiquement le dernier monde joué avant chaque lancement (5 copies conservées)"), this);
-    for (auto* box : { m_master, m_nightVision, m_shulker, m_hud, m_backup })
+    m_discord = new QCheckBox(tr("Afficher sur Discord à quoi je joue (version de Minecraft et serveur)"), this);
+    m_discordId = new QLineEdit(this);
+    m_discordId->setPlaceholderText(tr("Identifiant d'application Discord (voir discord.com/developers/applications)"));
+    for (auto* box : { m_master, m_nightVision, m_shulker, m_hud, m_backup, m_discord })
         layout->addWidget(box);
+    layout->addWidget(m_discordId);
 
     connect(m_master, &QCheckBox::toggled, this, &FeaturesPage::updateEnabledState);
 
@@ -50,6 +55,8 @@ void FeaturesPage::load()
     m_shulker->setChecked(s->get("FeatureShulkerPreview").toBool());
     m_hud->setChecked(s->get("FeatureHud").toBool());
     m_backup->setChecked(s->get("AutoWorldBackup").toBool());
+    m_discord->setChecked(s->get("DiscordRpc").toBool());
+    m_discordId->setText(s->get("DiscordClientId").toString());
     updateEnabledState();
 }
 
@@ -68,5 +75,7 @@ bool FeaturesPage::apply()
     s->set("FeatureShulkerPreview", m_shulker->isChecked());
     s->set("FeatureHud", m_hud->isChecked());
     s->set("AutoWorldBackup", m_backup->isChecked());
+    s->set("DiscordRpc", m_discord->isChecked());
+    s->set("DiscordClientId", m_discordId->text().trimmed());
     return true;
 }

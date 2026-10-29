@@ -68,6 +68,7 @@
 #include "ui/pages/global/ProxyPage.h"
 #include "ui/pages/global/FeaturesPage.h"
 #include "ClientFeatures.h"
+#include "DiscordPresence.h"
 
 #include "ui/setupwizard/AutoJavaWizardPage.h"
 #include "ui/setupwizard/JavaWizardPage.h"
@@ -930,6 +931,8 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("FeatureHud", true);
         m_settings->registerSetting("AutoWorldBackup", true);
         m_settings->registerSetting("AskInstallFabric", true);
+        m_settings->registerSetting("DiscordRpc", true);
+        m_settings->registerSetting("DiscordClientId", "");
 
         // Custom Technic Client ID
         m_settings->registerSetting("TechnicClientID", "");
@@ -1603,6 +1606,9 @@ bool Application::launch(MinecraftInstance* instance,
         }
         ClientFeatures::apply(instance);
         ClientFeatures::backupLatestWorld(instance);
+        if (!m_discord)
+            m_discord = new DiscordPresence(this);
+        m_discord->start(instance);
         QMutexLocker locker(&m_instanceExtrasMutex);
         auto& extras = m_instanceExtras[instance->id()];
         auto* window = extras.window;

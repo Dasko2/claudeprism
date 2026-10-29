@@ -287,6 +287,7 @@ class Application : public QApplication {
     size_t m_openWindows = 0;
     size_t m_runningInstances = 0;
     bool m_updateRunning = false;
+    class DiscordPresence* m_discord = nullptr;
 
     // main window, if any
     MainWindow* m_mainWindow = nullptr;

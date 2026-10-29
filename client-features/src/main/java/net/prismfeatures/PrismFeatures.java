@@ -107,12 +107,14 @@ public class PrismFeatures implements ClientModInitializer {
             nightVisionOn = false;
             zoomActive = false;
             Extras.reset();
+            Status.clear();
             return;
         }
         safe("night-vision", () -> tickNightVision(client));
         safe("zoom", () -> tickZoom(client));
         safe("point-de-mort", () -> tickDeath(client));
         safe("extras", Extras::tick);
+        safe("statut", Status::tick);
         safe("menu", () -> {
             if (client.currentScreen == null && pressed(client, "menu", Config.key("menu", DEFAULT_KEY_MENU)))
                 client.setScreen(new FeaturesScreen());
