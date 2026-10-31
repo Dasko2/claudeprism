@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: GPL-3.0-only
 #include <QMap>
 #include "ClientFeatures.h"
 
@@ -11,6 +10,7 @@
 #include <QJsonObject>
 
 #include "Application.h"
+#include "Lang.h"
 #include "FileSystem.h"
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
@@ -39,17 +39,16 @@ static QString featuresDir()
     return FS::PathCombine(APPLICATION->dataRoot(), "features");
 }
 
-/// Extrait la charge utile embarquée (:/features/<loader>-<mc>.jar) et renvoie son chemin ; vide si absente.
 static QString extractPayload(const QString& loader, const QString& mc)
 {
-    // version du mod la plus proche : les versions intermédiaires utilisent le build compatible
+
     static const QMap<QString, QString> alias = { { "1.21", "1.21.1" } };
     const QString resolved = alias.value(mc, mc);
     QStringList names;
     names << QString("%1-%2.jar").arg(loader, resolved);
     if (resolved != mc)
         names << QString("%1-%2.jar").arg(loader, mc);
-    // 26.1.2 -> 26.1 : les versions de correctif utilisent le build de la version mineure
+
     const auto parts = mc.split('.');
     if (parts.size() >= 3)
         names << QString("%1-%2.%3.jar").arg(loader, parts[0], parts[1]);
@@ -87,7 +86,6 @@ void apply(MinecraftInstance* instance)
         return;
     auto* settings = APPLICATION->settings();
 
-    // le mod est caché : on supprime toute copie visible laissée par une ancienne version
     QFile::remove(QDir(QDir(instance->gameRoot()).filePath("mods")).filePath("prismfeatures.jar"));
 
     if (!settings->get("FeaturesEnabled").toBool())
@@ -119,7 +117,6 @@ void backupLatestWorld(MinecraftInstance* instance)
     const QString dst = QDir(root).filePath(world.fileName() + "-" + QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss"));
     FS::copy(world.absoluteFilePath(), dst)();
 
-    // on garde les 5 plus récentes
     QDir backups(root);
     const auto all = backups.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Time);
     for (int i = 5; i < all.size(); ++i)
@@ -164,7 +161,6 @@ QStringList jvmArguments(MinecraftInstance* instance)
     const QString path = QDir::toNativeSeparators(payload);
     qInfo() << "ClientFeatures : chargement de" << path;
 
-    // Fabric et Quilt chargent directement ce jar, sans qu'il soit dans le dossier mods (donc invisible).
     QStringList args;
     args << QString("-Dfabric.addMods=%1").arg(path);
     if (loader == "quilt")
@@ -172,4 +168,4 @@ QStringList jvmArguments(MinecraftInstance* instance)
     return args;
 }
 
-}  // namespace ClientFeatures
+}

@@ -1,6 +1,5 @@
 package net.prismfeatures;
 
-/** Publie le serveur actuel (toutes les 5 s, seulement si ça change). */
 public final class Status {
     private Status() {}
 
@@ -16,7 +15,6 @@ public final class Status {
         }
     }
 
-    /** À la fermeture du monde. */
     public static void clear() {
         if (last != null && !last.isEmpty()) {
             last = "";

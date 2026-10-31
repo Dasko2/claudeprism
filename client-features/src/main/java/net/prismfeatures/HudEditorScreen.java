@@ -5,7 +5,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
-/** Éditeur de placement : glisser chaque élément avec la souris où on veut. */
 public class HudEditorScreen extends ScreenBase {
     private final Screen parent;
     private Hud.Element dragging = null;
@@ -18,7 +17,7 @@ public class HudEditorScreen extends ScreenBase {
     private int rBottom = 0;
 
     public HudEditorScreen(Screen parent) {
-        super(Text.literal("Placer les éléments"));
+        super(Text.literal(T.t("Placer les éléments")));
         this.parent = parent;
     }
 
@@ -27,23 +26,22 @@ public class HudEditorScreen extends ScreenBase {
         final int bw = 90;
         final int y = this.height - 28;
         final int x0 = this.width / 2 - (2 * bw + 4) / 2;
-        this.addDrawableChild(Compat.button(Text.literal("Réinitialiser"), () -> Config.resetPositions(), x0, y, bw, 20));
-        this.addDrawableChild(Compat.button(Text.literal("Terminé"), () -> this.close(), x0 + (bw + 4), y, bw, 20));
+        this.addDrawableChild(Compat.button(Text.literal(T.t("Réinitialiser")), () -> Config.resetPositions(), x0, y, bw, 20));
+        this.addDrawableChild(Compat.button(Text.literal(T.t("Terminé")), () -> this.close(), x0 + (bw + 4), y, bw, 20));
     }
 
     @Override
     protected void draw(Gfx ctx, int mouseX, int mouseY, float delta) {
         MinecraftClient c = MinecraftClient.getInstance();
-        ctx.centered(Text.literal("Glissez un élément pour le déplacer, tirez le carré en haut à gauche pour changer sa taille"), this.width / 2, 12, 0xFFFFFFFF);
+        ctx.centered(Text.literal(T.t("Glissez un élément pour le déplacer, tirez le carré en haut à gauche pour changer sa taille")), this.width / 2, 12, 0xFFFFFFFF);
 
-        // état de la souris (sans dépendre de la signature des événements de souris)
         boolean down = GLFW.glfwGetMouseButton(Compat.handle(c), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
         if (down && !wasDown && mouseY < this.height - 36) {
             for (Hud.Element e : Hud.ELEMENTS) {
                 int hx = e.x(this.width, c, true);
                 int hy = e.y(this.height, c, true);
                 if (mouseX >= hx - 7 && mouseX <= hx + 3 && mouseY >= hy - 7 && mouseY <= hy + 3) {
-                    resizing = e; // carré de redimensionnement (haut gauche) ; le coin bas droit reste fixe
+                    resizing = e;
                     selected = e;
                     rRight = hx + e.w(c);
                     rBottom = hy + e.h(c);
@@ -57,7 +55,7 @@ public class HudEditorScreen extends ScreenBase {
                 int x = e.x(this.width, c, true);
                 int y = e.y(this.height, c, true);
                 if (mouseX >= x - 2 && mouseX <= x + e.w(c) + 2 && mouseY >= y - 2 && mouseY <= y + e.h(c) + 2) {
-                    dragging = e; // le dernier de la liste est « au-dessus »
+                    dragging = e;
                     selected = e;
                     grabDx = mouseX - x;
                     grabDy = mouseY - y;

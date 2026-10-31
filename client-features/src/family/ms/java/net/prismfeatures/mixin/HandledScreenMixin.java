@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Vision des shulkers : survoler un shulker dans un inventaire affiche son contenu. */
 @Mixin(HandledScreen.class)
 public abstract class HandledScreenMixin<T extends ScreenHandler> extends Screen {
     @Shadow
@@ -29,7 +28,6 @@ public abstract class HandledScreenMixin<T extends ScreenHandler> extends Screen
         if (this.focusedSlot != null) PrismFeatures.onSlotHover(new Gfx(context), this.focusedSlot, mouseX, mouseY);
     }
 
-    /** Deuxième accroche : l'inventaire du joueur / créatif passent par ici même si render est redéfini. */
     @Inject(method = "drawMouseoverTooltip", at = @At("HEAD"), require = 0)
     private void prism$shulkerPreview2(MatrixStack context, int mouseX, int mouseY, CallbackInfo ci) {
         if (this.focusedSlot != null) PrismFeatures.onSlotHover(new Gfx(context), this.focusedSlot, mouseX, mouseY);

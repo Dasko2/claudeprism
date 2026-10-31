@@ -4,7 +4,6 @@ version = '1.0.0'
 base { archivesName = 'prismfeatures' }
 
 java {
-    // Java 8 : l'agent doit pouvoir démarrer sur toutes les versions de Minecraft (même les anciennes)
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }

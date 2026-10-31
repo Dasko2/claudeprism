@@ -7,7 +7,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-/** Surface de dessin (famille MatrixStack, Minecraft 1.19.x). */
 public final class Gfx {
     private final MatrixStack m;
     private final MinecraftClient mc = MinecraftClient.getInstance();
@@ -19,7 +18,7 @@ public final class Gfx {
     public void centered(Text t, int x, int y, int color) { mc.textRenderer.drawWithShadow(m, t, x - mc.textRenderer.getWidth(t) / 2f, (float) y, color); }
     public void item(ItemStack s, int x, int y) { Compat.item(m, mc, s, x, y); }
     public void overlay(ItemStack s, int x, int y) { Compat.overlay(m, mc, s, x, y); }
-    /** L'échelle passe par la matrice globale : c'est elle qu'utilise le rendu des objets dans ces versions. */
+
     public void push(int x, int y, float s) {
         MatrixStack mv = RenderSystem.getModelViewStack();
         mv.push();

@@ -7,6 +7,7 @@
  *  the Free Software Foundation, version 3.
  */
 
+#include "Lang.h"
 #include "ErrorsPage.h"
 
 #include <QClipboard>
@@ -93,7 +94,7 @@ ErrorsPage::ErrorsPage(MinecraftInstance* instance, QWidget* parent) : QWidget(p
     fileLayout->setContentsMargins(16, 12, 16, 12);
     fileLayout->setSpacing(6);
 
-    auto* fileTitle = new QLabel(tr("Fichier log"), fileCard);
+    auto* fileTitle = new QLabel(Lang::t("Fichier log"), fileCard);
     QFont titleFont = fileTitle->font();
     titleFont.setBold(true);
     titleFont.setPointSize(titleFont.pointSize() > 0 ? titleFont.pointSize() + 1 : 11);
@@ -111,10 +112,10 @@ ErrorsPage::ErrorsPage(MinecraftInstance* instance, QWidget* parent) : QWidget(p
 
     auto* fileButtons = new QHBoxLayout();
     fileButtons->setSpacing(8);
-    auto* openFile = new QPushButton(tr("Ouvrir le fichier log"), fileCard);
-    auto* openFolder = new QPushButton(tr("Ouvrir le dossier"), fileCard);
-    auto* copyPath = new QPushButton(tr("Copier le chemin"), fileCard);
-    auto* reload = new QPushButton(tr("Actualiser"), fileCard);
+    auto* openFile = new QPushButton(Lang::t("Ouvrir le fichier log"), fileCard);
+    auto* openFolder = new QPushButton(Lang::t("Ouvrir le dossier"), fileCard);
+    auto* copyPath = new QPushButton(Lang::t("Copier le chemin"), fileCard);
+    auto* reload = new QPushButton(Lang::t("Actualiser"), fileCard);
     fileButtons->addWidget(openFile);
     fileButtons->addWidget(openFolder);
     fileButtons->addWidget(copyPath);
@@ -153,7 +154,7 @@ ErrorsPage::ErrorsPage(MinecraftInstance* instance, QWidget* parent) : QWidget(p
     m_cardsLayout->setContentsMargins(0, 0, 6, 0);
     m_cardsLayout->setSpacing(10);
 
-    auto* emptyLabel = new QLabel(tr("Aucune erreur détectée pour le moment."), holder);
+    auto* emptyLabel = new QLabel(Lang::t("Aucune erreur détectée pour le moment."), holder);
     emptyLabel->setObjectName("muted");
     emptyLabel->setAlignment(Qt::AlignCenter);
     m_emptyState = emptyLabel;
@@ -335,7 +336,7 @@ QList<ErrorsPage::Entry> ErrorsPage::collectCrashReport(const QString& logPath) 
     Entry entry;
     entry.level = "CRASH";
     entry.time = newest.lastModified().toString("HH:mm:ss");
-    entry.title = tr("Crash report : %1").arg(newest.fileName());
+    entry.title = Lang::t("Crash report : %1").arg(newest.fileName());
 
     QFile file(newest.absoluteFilePath());
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -347,7 +348,7 @@ QList<ErrorsPage::Entry> ErrorsPage::collectCrashReport(const QString& logPath) 
         }
         for (const QString& line : head) {
             if (line.startsWith("Description:")) {
-                entry.title = tr("Crash : %1").arg(line.mid(12).trimmed());
+                entry.title = Lang::t("Crash : %1").arg(line.mid(12).trimmed());
                 break;
             }
         }
@@ -370,22 +371,22 @@ Advice adviceFor(const QString& all)
 {
     auto has = [&](const char* needle) { return all.contains(QLatin1String(needle), Qt::CaseInsensitive); };
     if (has("OutOfMemoryError") || has("GC overhead limit") || has("Java heap space"))
-        return { QObject::tr("Le jeu manque de mémoire. Augmentez la mémoire allouée à cette instance."), QObject::tr("Allouer 6 Go"), 1 };
+        return { Lang::t("Le jeu manque de mémoire. Augmentez la mémoire allouée à cette instance."), Lang::t("Allouer 6 Go"), 1 };
     if (has("UnsupportedClassVersionError") || has("class file version") || has("requires Java"))
-        return { QObject::tr("Mauvaise version de Java pour cette version de Minecraft (1.20.5 et plus : Java 21, 26.x : Java 25, avant : Java 17). "
+        return { Lang::t("Mauvaise version de Java pour cette version de Minecraft (1.20.5 et plus : Java 21, 26.x : Java 25, avant : Java 17). "
                              "Réglez-la dans Paramètres de l'instance > Java."), {}, 0 };
     if (has("Mixin apply failed") || has("MixinApplyError") || has("InvalidInjectionException") || has("Incompatible mod set")
         || has("requires version") || has("depends on") || has("Mod resolution failed"))
-        return { QObject::tr("Un mod est incompatible avec cette version ou avec un autre mod. Retirez le dernier mod ajouté ou mettez-le à jour."),
-                 QObject::tr("Ouvrir le dossier des mods"), 2 };
+        return { Lang::t("Un mod est incompatible avec cette version ou avec un autre mod. Retirez le dernier mod ajouté ou mettez-le à jour."),
+                 Lang::t("Ouvrir le dossier des mods"), 2 };
     if (has("Failed to bind to port") || has("Address already in use"))
-        return { QObject::tr("Le port est déjà utilisé : un autre serveur ou une autre instance tourne encore. Fermez-la puis réessayez."), {}, 0 };
+        return { Lang::t("Le port est déjà utilisé : un autre serveur ou une autre instance tourne encore. Fermez-la puis réessayez."), {}, 0 };
     if (has("Could not reserve enough space") || has("Invalid maximum heap size"))
-        return { QObject::tr("La mémoire demandée dépasse celle de votre ordinateur. Baissez la mémoire allouée."), QObject::tr("Allouer 4 Go"), 1 };
+        return { Lang::t("La mémoire demandée dépasse celle de votre ordinateur. Baissez la mémoire allouée."), Lang::t("Allouer 4 Go"), 1 };
     if (has("UnknownHostException") || has("Connection timed out") || has("Failed to download"))
-        return { QObject::tr("Problème de connexion Internet ou de pare-feu. Vérifiez votre réseau puis relancez."), {}, 0 };
+        return { Lang::t("Problème de connexion Internet ou de pare-feu. Vérifiez votre réseau puis relancez."), {}, 0 };
     if (has("GLFW error") || has("OpenGL") || has("pixel format"))
-        return { QObject::tr("Problème de pilote graphique. Mettez à jour le pilote de votre carte graphique."), {}, 0 };
+        return { Lang::t("Problème de pilote graphique. Mettez à jour le pilote de votre carte graphique."), {}, 0 };
     return {};
 }
 }  // namespace
@@ -412,12 +413,12 @@ QWidget* ErrorsPage::createCard(const Entry& entry)
     }
     top->addStretch(1);
     auto* copy = new QToolButton(card);
-    copy->setText(tr("Copier"));
-    copy->setToolTip(tr("Copier cette erreur dans le presse-papiers"));
+    copy->setText(Lang::t("Copier"));
+    copy->setToolTip(Lang::t("Copier cette erreur dans le presse-papiers"));
     top->addWidget(copy);
     layout->addLayout(top);
 
-    auto* title = new QLabel(entry.title.isEmpty() ? tr("(message vide)") : entry.title, card);
+    auto* title = new QLabel(entry.title.isEmpty() ? Lang::t("(message vide)") : entry.title, card);
     title->setObjectName("cardTitle");
     title->setWordWrap(true);
     title->setTextInteractionFlags(Qt::TextSelectableByMouse);
@@ -425,7 +426,7 @@ QWidget* ErrorsPage::createCard(const Entry& entry)
 
     const Advice advice = adviceFor(entry.title + "\n" + entry.details);
     if (!advice.text.isEmpty()) {
-        auto* tip = new QLabel(tr("Piste : ") + advice.text, card);
+        auto* tip = new QLabel(Lang::t("Piste : ") + advice.text, card);
         tip->setWordWrap(true);
         layout->addWidget(tip);
         if (advice.fix != 0) {
@@ -439,7 +440,7 @@ QWidget* ErrorsPage::createCard(const Entry& entry)
                     s->set("OverrideMemory", true);
                     s->set("MaxMemAlloc", mem);
                     s->set("MinMemAlloc", 512);
-                    fix->setText(tr("Mémoire modifiée, relancez le jeu"));
+                    fix->setText(Lang::t("Mémoire modifiée, relancez le jeu"));
                     fix->setEnabled(false);
                 } else {
                     DesktopServices::openPath(QDir(m_instance->gameRoot()).filePath("mods"));
@@ -453,7 +454,7 @@ QWidget* ErrorsPage::createCard(const Entry& entry)
 
     if (!entry.details.isEmpty()) {
         auto* toggle = new QToolButton(card);
-        toggle->setText(tr("Afficher la trace complète"));
+        toggle->setText(Lang::t("Afficher la trace complète"));
         toggle->setAutoRaise(true);
         layout->addWidget(toggle, 0, Qt::AlignLeft);
 
@@ -468,7 +469,7 @@ QWidget* ErrorsPage::createCard(const Entry& entry)
         connect(toggle, &QToolButton::clicked, card, [toggle, trace] {
             const bool show = !trace->isVisible();
             trace->setVisible(show);
-            toggle->setText(show ? tr("Masquer la trace") : tr("Afficher la trace complète"));
+            toggle->setText(show ? Lang::t("Masquer la trace") : Lang::t("Afficher la trace complète"));
         });
     }
     return card;
@@ -494,13 +495,13 @@ void ErrorsPage::rebuild(const QList<Entry>& entries)
 
     const int total = entries.size();
     if (total == 0) {
-        m_summaryLabel->setText(tr("Aucune erreur"));
+        m_summaryLabel->setText(Lang::t("Aucune erreur"));
     } else if (total == 1) {
-        m_summaryLabel->setText(tr("1 erreur détectée"));
+        m_summaryLabel->setText(Lang::t("1 erreur détectée"));
     } else if (total > kMaxCards) {
-        m_summaryLabel->setText(tr("%1 erreurs détectées (les %2 plus récentes sont affichées)").arg(total).arg(kMaxCards));
+        m_summaryLabel->setText(Lang::t("%1 erreurs détectées (les %2 plus récentes sont affichées)").arg(total).arg(kMaxCards));
     } else {
-        m_summaryLabel->setText(tr("%1 erreurs détectées").arg(total));
+        m_summaryLabel->setText(Lang::t("%1 erreurs détectées").arg(total));
     }
 
     if (m_errorCount != total) {
@@ -512,15 +513,15 @@ void ErrorsPage::rebuild(const QList<Entry>& entries)
 void ErrorsPage::refresh()
 {
     const QString path = logFilePath();
-    m_pathLabel->setText(QDir::toNativeSeparators(path) + (QFileInfo::exists(path) ? QString() : tr("  (fichier introuvable)")));
+    m_pathLabel->setText(QDir::toNativeSeparators(path) + (QFileInfo::exists(path) ? QString() : Lang::t("  (fichier introuvable)")));
 
     QList<Entry> entries;
     if (m_model && m_model->rowCount() > 0) {
         entries = collectFromModel();
-        m_sourceLabel->setText(tr("Source des erreurs : console en direct"));
+        m_sourceLabel->setText(Lang::t("Source des erreurs : console en direct"));
     } else {
         entries = collectFromFile(path);
-        m_sourceLabel->setText(tr("Source des erreurs : dernier fichier latest.log"));
+        m_sourceLabel->setText(Lang::t("Source des erreurs : dernier fichier latest.log"));
     }
     entries.append(collectCrashReport(path));
 

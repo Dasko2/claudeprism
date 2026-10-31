@@ -7,7 +7,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Masque la liste de contenu vanilla du shulker : la grille du mod la remplace. */
 @Mixin(ContainerComponent.class)
 public class ContainerComponentMixin {
     @Inject(method = "appendTooltip", at = @At("HEAD"), cancellable = true, require = 0)

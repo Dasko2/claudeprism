@@ -3,7 +3,6 @@ package net.prismfeatures;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
-/** Petit adaptateur pour que Extras reste identique entre les arbres de code. */
 public final class Gfx {
     private final GuiGraphicsExtractor c;
     private final Minecraft mc = Minecraft.getInstance();

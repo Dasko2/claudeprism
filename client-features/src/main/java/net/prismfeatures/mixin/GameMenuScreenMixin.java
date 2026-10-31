@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Ajoute le bouton « Menu de config » dans le menu Échap. */
 @Mixin(GameMenuScreen.class)
 public abstract class GameMenuScreenMixin extends Screen {
     protected GameMenuScreenMixin(Text title) {
@@ -19,6 +18,6 @@ public abstract class GameMenuScreenMixin extends Screen {
 
     @Inject(method = "init", at = @At("TAIL"))
     private void prism$addConfigButton(CallbackInfo ci) {
-        this.addDrawableChild(Compat.button(Text.literal("Menu de config"), () -> this.client.setScreen(new FeaturesScreen(this)), 6, 6, 110, 20));
+        this.addDrawableChild(Compat.button(Text.literal(T.t("Menu de config")), () -> this.client.setScreen(new FeaturesScreen(this)), 6, 6, 110, 20));
     }
 }

@@ -69,6 +69,7 @@
 #include "ui/pages/global/FeaturesPage.h"
 #include "ClientFeatures.h"
 #include "DiscordPresence.h"
+#include "Lang.h"
 
 #include "ui/setupwizard/AutoJavaWizardPage.h"
 #include "ui/setupwizard/JavaWizardPage.h"
@@ -1589,12 +1590,12 @@ bool Application::launch(MinecraftInstance* instance,
             const bool supported = parts.size() >= 2 && ((parts[0] == "1" && parts[1].toInt() >= 19) || parts[0].toInt() >= 26);
             if (supported) {
                 QMessageBox box(m_mainWindow);
-                box.setWindowTitle(tr("Fonctionnalités intégrées"));
-                box.setText(tr("Cette instance n'a pas de mod loader : night vision, zoom, HUD et le reste ne seront pas actifs.\n"
+                box.setWindowTitle(Lang::t("Fonctionnalités intégrées"));
+                box.setText(Lang::t("Cette instance n'a pas de mod loader : night vision, zoom, HUD et le reste ne seront pas actifs.\n"
                                "Installer Fabric maintenant (aucun mod à gérer, c'est automatique) ?"));
-                auto* yes = box.addButton(tr("Installer Fabric"), QMessageBox::AcceptRole);
-                box.addButton(tr("Pas maintenant"), QMessageBox::RejectRole);
-                auto* never = box.addButton(tr("Ne plus demander"), QMessageBox::DestructiveRole);
+                auto* yes = box.addButton(Lang::t("Installer Fabric"), QMessageBox::AcceptRole);
+                box.addButton(Lang::t("Pas maintenant"), QMessageBox::RejectRole);
+                auto* never = box.addButton(Lang::t("Ne plus demander"), QMessageBox::DestructiveRole);
                 box.exec();
                 if (box.clickedButton() == yes) {
                     InstallLoaderDialog dialog(instance->getPackProfile(), "net.fabricmc.fabric-loader", m_mainWindow);

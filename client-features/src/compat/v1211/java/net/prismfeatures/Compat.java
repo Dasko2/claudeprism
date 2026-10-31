@@ -10,7 +10,6 @@ import net.minecraft.client.gui.DrawContext;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Différences d'API entre versions de Minecraft (groupe : v1211). */
 public final class Compat {
     private Compat() {}
     public static long handle(MinecraftClient c) { return c.getWindow().getHandle(); }

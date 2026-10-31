@@ -950,6 +950,8 @@ SET(LAUNCHER_SOURCES
     ui/pages/global/FeaturesPage.h
     ClientFeatures.cpp
     ClientFeatures.h
+    Lang.cpp
+    Lang.h
     DiscordPresence.cpp
     DiscordPresence.h
     ui/pages/global/APIPage.cpp
@@ -1223,6 +1225,18 @@ qt_add_resources(LAUNCHER_RESOURCES
 )
 
 # agent des fonctionnalités intégrées : embarqué dans l'exécutable s'il a été construit avant le launcher
+file(GLOB LANG_FILES "${CMAKE_SOURCE_DIR}/lang/*.json")
+set(LANG_QRC "<RCC><qresource prefix=\"/prismlang\">")
+foreach(p ${LANG_FILES})
+    get_filename_component(pn "${p}" NAME)
+    string(APPEND LANG_QRC "<file alias=\"${pn}\">${p}</file>")
+endforeach()
+string(APPEND LANG_QRC "</qresource></RCC>")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/prismlang.qrc" "${LANG_QRC}")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${LANG_FILES})
+qt_add_resources(LAUNCHER_LANG_RESOURCES "${CMAKE_CURRENT_BINARY_DIR}/prismlang.qrc")
+list(APPEND LAUNCHER_RESOURCES ${LAUNCHER_LANG_RESOURCES})
+
 file(GLOB FEATURE_PAYLOADS "${CMAKE_CURRENT_SOURCE_DIR}/resources/features/fabric-*.jar")
 if(FEATURE_PAYLOADS)
     set(FEATURE_QRC "<RCC><qresource prefix=\"/features\">")

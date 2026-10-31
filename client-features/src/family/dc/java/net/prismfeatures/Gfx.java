@@ -5,7 +5,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-/** Surface de dessin (famille DrawContext, Minecraft 1.20+). */
 public final class Gfx {
     private final DrawContext c;
     private final MinecraftClient mc = MinecraftClient.getInstance();

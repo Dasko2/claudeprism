@@ -1,5 +1,4 @@
 #!/bin/sh
-# Construit le payload d'une version : sh build-all.sh <mc> <yarn> <compat> <famille> <java>
 set -e
 cd "$(dirname "$0")"
 MC=${1:-1.21.11}; YARN=${2:-1.21.11+build.6}; COMPAT=${3:-new}; FAMILY=${4:-dc}; JAVA=${5:-21}

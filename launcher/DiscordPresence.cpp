@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: GPL-3.0-only
 #include "DiscordPresence.h"
 
 #include <QCoreApplication>
@@ -10,6 +9,7 @@
 #include <QUuid>
 
 #include "Application.h"
+#include "Lang.h"
 #include "ClientFeatures.h"
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
@@ -68,7 +68,7 @@ void DiscordPresence::start(MinecraftInstance* instance)
     m_startedAt = QDateTime::currentSecsSinceEpoch();
     m_ready = false;
     if (!connectIpc())
-        return;  // Discord n'est pas ouvert : on n'insiste pas
+        return;
     send(0, QJsonDocument(QJsonObject{ { "v", 1 }, { "client_id", m_clientId } }).toJson(QJsonDocument::Compact));
     m_socket.waitForReadyRead(500);
     m_socket.readAll();
@@ -114,7 +114,7 @@ void DiscordPresence::update()
     if (!loader.isEmpty())
         loader[0] = loader[0].toUpper();
     const QString details = "Minecraft " + mc + (loader.isEmpty() ? QString() : " (" + loader + ")");
-    const QString state = server.isEmpty() ? tr("Dans les menus") : server == "Solo" ? tr("En solo") : tr("Serveur : %1").arg(server);
+    const QString state = server.isEmpty() ? Lang::t("Dans les menus") : server == "Solo" ? Lang::t("En solo") : Lang::t("Serveur : %1").arg(server);
 
     QJsonObject activity{ { "details", details },
                           { "state", state },

@@ -4,7 +4,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-/** Menu de config en jeu (dessiné par MenuUi). */
 public class FeaturesScreen extends Screen {
     private final Screen parent;
     private final MenuUi ui = new MenuUi(() -> Compat.setScreen(this.minecraft, new HudEditorScreen(this)), () -> this.onClose());
@@ -14,7 +13,7 @@ public class FeaturesScreen extends Screen {
     }
 
     public FeaturesScreen(Screen parent) {
-        super(Component.literal("Menu de config"));
+        super(Component.literal(T.t("Menu de config")));
         this.parent = parent;
     }
 
@@ -29,5 +28,17 @@ public class FeaturesScreen extends Screen {
         PrismFeatures.listening = null;
         PrismFeatures.onBindingChanged = null;
         if (this.minecraft != null) Compat.setScreen(this.minecraft, parent);
+    }
+
+    @Override
+    public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() == 0) Env.leftHeld = true;
+        return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event) {
+        if (event.button() == 0) Env.leftHeld = false;
+        return super.mouseReleased(event);
     }
 }

@@ -32,10 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Fonctionnalités intégrées. Aucune dépendance à Fabric API : tout passe par des mixins.
- * Chaque fonctionnalité est isolée : si l'une échoue, elle est coupée (et loguée) sans toucher aux autres.
- */
 public class PrismFeatures implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("prismfeatures");
 
@@ -47,11 +43,9 @@ public class PrismFeatures implements ClientModInitializer {
     private static final Set<String> okLogged = new HashSet<>();
     private static final Map<String, Boolean> wasDown = new HashMap<>();
 
-    // --- capture d'une touche depuis le menu ---
     public static String listening = null;
     public static Runnable onBindingChanged = null;
 
-    // --- états ---
     private static boolean nightVisionOn = false;
     private static boolean zoomActive = false;
     private static int savedFov = 70;
@@ -64,7 +58,6 @@ public class PrismFeatures implements ClientModInitializer {
         LOGGER.info("[PrismFeatures] chargé");
     }
 
-    // ------------------------------------------------------------------ utilitaires
     public static void safe(String name, Runnable r) {
         if (broken.contains(name)) return;
         try {
@@ -80,7 +73,6 @@ public class PrismFeatures implements ClientModInitializer {
         return Compat.keyPressed(client, code);
     }
 
-    /** Vrai une seule fois à l'appui de la touche. */
     private static boolean pressed(Minecraft client, String id, int code) {
         boolean down = keyDown(client, code);
         boolean was = wasDown.getOrDefault(id, false);
@@ -90,10 +82,9 @@ public class PrismFeatures implements ClientModInitializer {
 
     public static String keyName(int code) {
         String n = Compat.keyDisplay(code);
-        return n != null && !n.isEmpty() ? n.toUpperCase() : "Touche " + code;
+        return n != null && !n.isEmpty() ? n.toUpperCase() : T.t("Touche ") + code;
     }
 
-    // ------------------------------------------------------------------ tick
     public static void onTick(Minecraft client) {
         safe("capture-touche", () -> captureKey(client));
         if (client.player == null || client.level == null) {
@@ -114,7 +105,6 @@ public class PrismFeatures implements ClientModInitializer {
         });
     }
 
-    /** Menu : « appuyez sur une touche ». Échap annule. */
     private static void captureKey(Minecraft client) {
         if (listening == null) return;
         for (int code : Compat.candidates()) {
@@ -131,7 +121,7 @@ public class PrismFeatures implements ClientModInitializer {
         boolean allowed = Config.enabled(Config.NIGHT_VISION);
         if (Compat.screen(client) == null && listening == null && pressed(client, "nv", Config.key("nightVision", DEFAULT_KEY_NIGHT)) && allowed) {
             nightVisionOn = !nightVisionOn;
-            Compat.overlayMessage(client, Component.literal("Night vision : " + (nightVisionOn ? "activée" : "désactivée")));
+            Compat.overlayMessage(client, Component.literal(T.t("Night vision : ") + (nightVisionOn ? T.t("activée") : T.t("désactivée"))));
             if (!nightVisionOn) p.removeEffect(MobEffects.NIGHT_VISION);
         }
         if (!allowed && nightVisionOn) {
@@ -139,7 +129,7 @@ public class PrismFeatures implements ClientModInitializer {
             p.removeEffect(MobEffects.NIGHT_VISION);
         }
         if (nightVisionOn && !p.hasEffect(MobEffects.NIGHT_VISION)) {
-            // effet purement local, infini, sans particules ni icône
+
             p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, MobEffectInstance.INFINITE_DURATION, 0, false, false, false));
         }
     }
@@ -157,7 +147,6 @@ public class PrismFeatures implements ClientModInitializer {
         }
     }
 
-    /** Mémorise le lieu de la dernière mort (affiché à l'écran, jamais dans le chat). */
     private static void tickDeath(Minecraft client) {
         Player p = client.player;
         boolean dead = p.getHealth() <= 0.0f;
@@ -165,12 +154,10 @@ public class PrismFeatures implements ClientModInitializer {
         wasDead = dead;
     }
 
-    // ------------------------------------------------------------------ shulker
     private static boolean isShulker(ItemStack stack) {
         return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof ShulkerBoxBlock;
     }
 
-    /** Nombre total d'un objet dans l'inventaire, y compris le contenu des shulkers qui s'y trouvent. */
     public static int countInInventory(Player p, ItemStack ref) {
         if (p == null || ref.isEmpty()) return ref.getCount();
         int total = 0;
@@ -188,14 +175,12 @@ public class PrismFeatures implements ClientModInitializer {
         return total;
     }
 
-    /** Survol d'un shulker dans un inventaire : son contenu s'affiche en grille. */
     public static void onSlotHover(GuiGraphicsExtractor ctx, Slot slot, int mouseX, int mouseY) {
         ItemStack stack = slot.getItem();
         if (!isShulker(stack)) return;
         onShulkerHover(ctx, stack, mouseX, mouseY);
     }
 
-    /** Aperçu du contenu en grille à côté du curseur. */
     public static void onShulkerHover(GuiGraphicsExtractor ctx, ItemStack stack, int mouseX, int mouseY) {
         if (!Config.enabled(Config.SHULKER)) return;
         safe("shulker", () -> {
@@ -209,15 +194,14 @@ public class PrismFeatures implements ClientModInitializer {
             int gridH = rows * 18 + 8 + 14;
             int gridW = 9 * 18 + 8;
             int x = Math.max(4, Math.min(mouseX + 12, ctx.guiWidth() - gridW - 4));
-            // au-dessus de l'infobulle de base (qui commence ~12 px au-dessus du curseur) ; en dessous s'il n'y a pas la place
+
             int y = mouseY - 12 - 6 - gridH;
             if (y < 4) y = Math.min(mouseY + 40, ctx.guiHeight() - gridH - 4);
             Compat.raise(ctx);
-            drawGrid(ctx, client, items, x, y, items.isEmpty() ? "Shulker vide" : "Contenu du shulker");
+            drawGrid(ctx, client, items, x, y, items.isEmpty() ? T.t("Shulker vide") : T.t("Contenu du shulker"));
         });
     }
 
-    /** Petit panneau avec les objets en grille de 9 colonnes (icônes + quantités). */
     private static void drawGrid(GuiGraphicsExtractor ctx, Minecraft client, List<ItemStack> items, int x, int y, String title) {
         int cols = 9;
         int rows = Math.max(1, (items.size() + cols - 1) / cols);
@@ -238,7 +222,6 @@ public class PrismFeatures implements ClientModInitializer {
         }
     }
 
-    // ------------------------------------------------------------------ HUD
     public static void onHud(GuiGraphicsExtractor ctx) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || client.level == null || Compat.hudHidden(client)) return;

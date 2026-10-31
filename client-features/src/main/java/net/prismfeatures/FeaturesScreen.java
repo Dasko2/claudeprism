@@ -3,7 +3,6 @@ package net.prismfeatures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
-/** Menu de config en jeu (dessiné par MenuUi). */
 public class FeaturesScreen extends ScreenBase {
     private final Screen parent;
     private final MenuUi ui = new MenuUi(() -> this.client.setScreen(new HudEditorScreen(this)), () -> this.close());
@@ -13,7 +12,7 @@ public class FeaturesScreen extends ScreenBase {
     }
 
     public FeaturesScreen(Screen parent) {
-        super(Text.literal("Menu de config"));
+        super(Text.literal(T.t("Menu de config")));
         this.parent = parent;
     }
 

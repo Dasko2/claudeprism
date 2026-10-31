@@ -7,7 +7,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Masque le viseur de base quand un viseur personnalisé est choisi. */
 @Mixin(InGameHud.class)
 public abstract class CrosshairMixin {
     @Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true, require = 0)

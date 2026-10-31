@@ -2,11 +2,6 @@ package net.prismfeatures;
 
 import java.util.List;
 
-/**
- * Menu de configuration façon launcher : barre latérale, onglets, interrupteurs, sélecteurs.
- * Aucun type Minecraft : tout passe par Gfx et Env, donc identique pour toutes les versions.
- * Les clics sont lus par sondage de la souris (comme l'éditeur de placement).
- */
 public final class MenuUi {
     private static final int BG = 0xF0141420;
     private static final int SIDE = 0xFF0D0D17;
@@ -17,16 +12,15 @@ public final class MenuUi {
     private static final int TEXT = 0xFFFFFFFF;
     private static final int MUTED = 0xFF9A9AB0;
 
-    private static final String[] TABS = { "Général", "Affichage", "Viseur", "Touches" };
+    private static final String[] TABS = { T.t("Général"), T.t("Affichage"), T.t("Viseur"), T.t("Touches") };
     private static final String[] TAB_SUB = {
-        "Fonctions de jeu", "Éléments à l'écran", "Personnalisation du viseur", "Raccourcis clavier" };
+        T.t("Fonctions de jeu"), T.t("Éléments à l'écran"), T.t("Personnalisation du viseur"), T.t("Raccourcis clavier") };
 
     private int tab = 0;
-    private boolean wasDown = true; // évite un clic fantôme à l'ouverture
+    private boolean wasDown = true;
     private final Runnable openEditor;
     private final Runnable close;
 
-    // état d'une image
     private Gfx g;
     private int mx, my;
     private boolean click;
@@ -44,7 +38,6 @@ public final class MenuUi {
         g.text(s, x + (w - Env.textWidth(s)) / 2, y, color);
     }
 
-    /** Bouton rectangulaire ; renvoie vrai au clic. */
     private boolean button(String label, int x, int y, int w, int h, boolean primary) {
         boolean hover = in(mx, my, x, y, w, h);
         g.fill(x, y, x + w, y + h, primary ? (hover ? 0xFF8F74FF : ACCENT) : (hover ? ROW_HOVER : ROW));
@@ -59,7 +52,7 @@ public final class MenuUi {
         boolean hover = allowed && in(mx, my, x, y, w, h);
         g.fill(x, y, x + w, y + h, hover ? ROW_HOVER : ROW);
         g.text(Config.LABELS.get(key), x + 8, y + 4, allowed ? TEXT : MUTED);
-        g.text(allowed ? desc : "Désactivé dans le launcher", x + 8, y + 15, MUTED);
+        g.text(allowed ? desc : T.t("Désactivé dans le launcher"), x + 8, y + 15, MUTED);
         int sx = x + w - 34;
         int sy = y + 7;
         g.fill(sx, sy, sx + 26, sy + 12, !allowed ? 0xFF2A2A36 : on ? ACCENT : OFF);
@@ -74,7 +67,7 @@ public final class MenuUi {
         boolean listening = id.equals(PrismFeatures.listening);
         g.fill(x, y, x + w, y + h, hover ? ROW_HOVER : ROW);
         g.text(label, x + 8, y + 9, TEXT);
-        String value = listening ? "Appuyez sur une touche..." : PrismFeatures.keyName(Config.key(id, def));
+        String value = listening ? T.t("Appuyez sur une touche...") : PrismFeatures.keyName(Config.key(id, def));
         int bw = Math.max(70, Env.textWidth(value) + 16);
         int bx = x + w - bw - 6;
         g.fill(bx, y + 4, bx + bw, y + h - 4, listening ? ACCENT : OFF);
@@ -107,7 +100,6 @@ public final class MenuUi {
         }
     }
 
-    /** Dessine tout le menu et traite les clics. */
     public void draw(Gfx gfx, int mouseX, int mouseY) {
         this.g = gfx;
         this.mx = mouseX;
@@ -124,15 +116,13 @@ public final class MenuUi {
         int Y = (sh - H) / 2;
         final int sideW = 108;
 
-        // ombre + panneau
         g.fill(X - 1, Y - 1, X + W + 1, Y + H + 1, 0xFF05050A);
         g.fill(X, Y, X + W, Y + H, BG);
         g.fill(X, Y, X + sideW, Y + H, SIDE);
         g.fill(X, Y, X + W, Y + 2, ACCENT);
 
-        // barre latérale
         g.text("PRISMLAUNCHER", X + 10, Y + 10, ACCENT);
-        g.text("Menu de config", X + 10, Y + 21, MUTED);
+        g.text(T.t("Menu de config"), X + 10, Y + 21, MUTED);
         for (int i = 0; i < TABS.length; i++) {
             int ty = Y + 42 + i * 24;
             boolean sel = i == tab;
@@ -142,10 +132,9 @@ public final class MenuUi {
             g.text(TABS[i], X + 16, ty + 6, sel ? TEXT : MUTED);
             if (hover && click) tab = i;
         }
-        if (button("Placer à l'écran", X + 6, Y + H - 50, sideW - 12, 20, false)) openEditor.run();
-        if (button("Fermer", X + 6, Y + H - 26, sideW - 12, 20, true)) close.run();
+        if (button(T.t("Placer à l'écran"), X + 6, Y + H - 50, sideW - 12, 20, false)) openEditor.run();
+        if (button(T.t("Fermer"), X + 6, Y + H - 26, sideW - 12, 20, true)) close.run();
 
-        // contenu
         int cx = X + sideW + 14;
         int cw = W - sideW - 28;
         g.text(TABS[tab], cx, Y + 12, TEXT);
@@ -155,38 +144,38 @@ public final class MenuUi {
 
         switch (tab) {
             case 0 -> toggles(List.of(
-                new String[] { Config.NIGHT_VISION, "Voir dans le noir" },
-                new String[] { Config.ZOOM, "Maintenir la touche pour zoomer" },
-                new String[] { Config.SHULKER, "Contenu au survol d'un shulker" }), cx, top, cw, 1);
+                new String[] { Config.NIGHT_VISION, T.t("Voir dans le noir") },
+                new String[] { Config.ZOOM, T.t("Maintenir la touche pour zoomer") },
+                new String[] { Config.SHULKER, T.t("Contenu au survol d'un shulker") }), cx, top, cw, 1);
             case 1 -> toggles(List.of(
-                new String[] { Config.HUD, "FPS, position, ping, heure" },
-                new String[] { Config.ARMOR, "Durabilité de l'armure" },
-                new String[] { Config.MAIN_HAND, "Objet tenu et quantité" },
-                new String[] { Config.OFF_HAND, "Seconde main" },
-                new String[] { Config.DEATH, "Coordonnées de la mort" },
-                new String[] { Config.CPS, "Clics par seconde" },
-                new String[] { Config.KEYS, "W A S D et souris" },
-                new String[] { Config.EFFECTS, "Effets de potion actifs" },
-                new String[] { Config.COMBO, "Coups enchaînés" },
-                new String[] { Config.DAMAGE, "Dernier coup reçu" },
-                new String[] { Config.COMPASS, "Barre de direction" },
-                new String[] { Config.DAYS, "Numéro du jour du monde" }), cx, top, cw, cw >= 300 ? 2 : 1);
+                new String[] { Config.HUD, T.t("FPS, position, ping, heure") },
+                new String[] { Config.ARMOR, T.t("Durabilité de l'armure") },
+                new String[] { Config.MAIN_HAND, T.t("Objet tenu et quantité") },
+                new String[] { Config.OFF_HAND, T.t("Seconde main") },
+                new String[] { Config.DEATH, T.t("Coordonnées de la mort") },
+                new String[] { Config.CPS, T.t("Clics par seconde") },
+                new String[] { Config.KEYS, T.t("W A S D et souris") },
+                new String[] { Config.EFFECTS, T.t("Effets de potion actifs") },
+                new String[] { Config.COMBO, T.t("Coups enchaînés") },
+                new String[] { Config.DAMAGE, T.t("Dernier coup reçu") },
+                new String[] { Config.COMPASS, T.t("Barre de direction") },
+                new String[] { Config.DAYS, T.t("Numéro du jour du monde") }), cx, top, cw, cw >= 300 ? 2 : 1);
             case 2 -> {
-                cycleRow("Style", Extras.CROSS_STYLES, "crosshairStyle", cx, top, cw);
-                cycleRow("Couleur", Extras.CROSS_COLORS, "crosshairColor", cx, top + 30, cw);
+                cycleRow(T.t("Style"), Extras.CROSS_STYLES, "crosshairStyle", cx, top, cw);
+                cycleRow(T.t("Couleur"), Extras.CROSS_COLORS, "crosshairColor", cx, top + 30, cw);
                 int py = top + 66;
                 int ph = Math.min(80, Y + H - py - 10);
                 g.fill(cx, py, cx + cw, py + ph, ROW);
-                g.text("Aperçu", cx + 8, py + 6, MUTED);
+                g.text(T.t("Aperçu"), cx + 8, py + 6, MUTED);
                 int style = Config.getInt("crosshairStyle", 0);
                 Extras.drawCrosshairAt(g, cx + cw / 2, py + ph / 2 + 4, style == 0 ? 1 : style, Config.getInt("crosshairColor", 0));
-                if (style == 0) g.text("Viseur de base du jeu", cx + 8, py + ph - 12, MUTED);
+                if (style == 0) g.text(T.t("Viseur de base du jeu"), cx + 8, py + ph - 12, MUTED);
             }
             default -> {
-                keyRow("nightVision", "Night vision", PrismFeatures.DEFAULT_KEY_NIGHT, cx, top, cw);
-                keyRow("zoom", "Zoom", PrismFeatures.DEFAULT_KEY_ZOOM, cx, top + 30, cw);
-                keyRow("menu", "Ouvrir ce menu", PrismFeatures.DEFAULT_KEY_MENU, cx, top + 60, cw);
-                g.text("Cliquez sur une touche puis appuyez sur la nouvelle.", cx, top + 96, MUTED);
+                keyRow("nightVision", T.t("Night vision"), PrismFeatures.DEFAULT_KEY_NIGHT, cx, top, cw);
+                keyRow("zoom", T.t("Zoom"), PrismFeatures.DEFAULT_KEY_ZOOM, cx, top + 30, cw);
+                keyRow("menu", T.t("Ouvrir ce menu"), PrismFeatures.DEFAULT_KEY_MENU, cx, top + 60, cw);
+                g.text(T.t("Cliquez sur une touche puis appuyez sur la nouvelle."), cx, top + 96, MUTED);
             }
         }
     }

@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Éléments d'affichage déplaçables (infos, armure, main, seconde main, point de mort). */
 public final class Hud {
     private Hud() {}
 
@@ -52,7 +51,6 @@ public final class Hud {
         public int w(Minecraft c) { return sw(c, true); }
         public int h(Minecraft c) { return sh(c, true); }
 
-        /** Dessine l'élément à sa taille choisie (échelle). */
         public void drawScaled(GuiGraphicsExtractor ctx, Minecraft c, int x, int y, boolean preview) {
             double s = scale();
             if (s == 1.0) {
@@ -81,19 +79,16 @@ public final class Hud {
         return 0xFFFF5555;
     }
 
-    /** Durabilité restante pour un objet qui s'use, sinon la quantité. */
     private static String number(ItemStack s) {
         return s.isDamageableItem() ? String.valueOf(s.getMaxDamage() - s.getDamageValue()) : String.valueOf(s.getCount());
     }
 
-    /** Ligne « image de l'objet + nombre à côté ». */
     private static void drawItemRow(GuiGraphicsExtractor ctx, Minecraft c, ItemStack s, int x, int y) {
         ctx.item(s, x, y);
         ctx.text(c.font, number(s), x + 22, y + 5, durabilityColor(s), true);
     }
 
-    // ---------------------------------------------------------------- infos
-    private static final Element INFOS = new Element("infos", "Infos", Config.HUD, 0.0, 0.0) {
+    private static final Element INFOS = new Element("infos", T.t("Infos"), Config.HUD, 0.0, 0.0) {
         private List<String> lines(Minecraft c) {
             Player p = c.player;
             List<String> out = new ArrayList<>();
@@ -101,18 +96,18 @@ public final class Hud {
             if (p == null || c.level == null) return out;
             BlockPos pos = p.blockPosition();
             String dir = switch (p.getDirection()) {
-                case NORTH -> "N";
-                case SOUTH -> "S";
-                case EAST -> "E";
-                default -> "O";
+                case NORTH -> T.t("dir.N");
+                case SOUTH -> T.t("dir.S");
+                case EAST -> T.t("dir.E");
+                default -> T.t("dir.O");
             };
             out.add("XYZ " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + "  " + dir);
-            out.add("Biome : " + c.level.getBiome(pos).unwrapKey().map(k -> k.identifier().getPath().replace('_', ' ')).orElse("?"));
+            out.add(T.t("Biome : ") + c.level.getBiome(pos).unwrapKey().map(k -> k.identifier().getPath().replace('_', ' ')).orElse("?"));
             if (c.getConnection() != null && c.getSingleplayerServer() == null) {
                 var entry = c.getConnection().getPlayerInfo(p.getUUID());
-                if (entry != null) out.add("Ping : " + entry.getLatency() + " ms");
+                if (entry != null) out.add(T.t("Ping : ") + entry.getLatency() + " ms");
             }
-            out.add("Heure : " + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+            out.add(T.t("Heure : ") + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
             return out;
         }
 
@@ -133,8 +128,7 @@ public final class Hud {
         }
     };
 
-    // ---------------------------------------------------------------- armure
-    private static final Element ARMOR = new Element("armor", "Armure", Config.ARMOR, 0.0, 0.45) {
+    private static final Element ARMOR = new Element("armor", T.t("Armure"), Config.ARMOR, 0.0, 0.45) {
         private final EquipmentSlot[] slots = { EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET };
 
         private List<ItemStack> pieces(Minecraft c, boolean preview) {
@@ -164,7 +158,6 @@ public final class Hud {
         }
     };
 
-    // ---------------------------------------------------------------- mains
     private static final class HandElement extends Element {
         private final boolean off;
 
@@ -186,7 +179,7 @@ public final class Hud {
         void draw(GuiGraphicsExtractor ctx, Minecraft c, int x, int y, boolean preview) {
             ItemStack s = stack(c, preview);
             if (s.isEmpty()) return;
-            // outil : durabilité restante ; sinon : nombre TOTAL dans l'inventaire (shulkers compris)
+
             String text;
             if (s.isDamageableItem()) text = String.valueOf(s.getMaxDamage() - s.getDamageValue());
             else text = String.valueOf(preview && c.player == null ? s.getCount() : PrismFeatures.countInInventory(c.player, s));
@@ -195,14 +188,13 @@ public final class Hud {
         }
     }
 
-    private static final Element MAIN = new HandElement("mainHand", "Objet en main", Config.MAIN_HAND, 0.0, 0.62, false);
-    private static final Element OFF = new HandElement("offHand", "Seconde main", Config.OFF_HAND, 0.0, 0.70, true);
+    private static final Element MAIN = new HandElement("mainHand", T.t("Objet en main"), Config.MAIN_HAND, 0.0, 0.62, false);
+    private static final Element OFF = new HandElement("offHand", T.t("Seconde main"), Config.OFF_HAND, 0.0, 0.70, true);
 
-    // ---------------------------------------------------------------- mort
-    private static final Element DEATH = new Element("death", "Point de mort", Config.DEATH, 0.0, 0.2) {
+    private static final Element DEATH = new Element("death", T.t("Point de mort"), Config.DEATH, 0.0, 0.2) {
         private String text() {
             BlockPos d = PrismFeatures.lastDeath;
-            return d == null ? "Mort : 120 64 -300" : "Mort : " + d.getX() + " " + d.getY() + " " + d.getZ();
+            return d == null ? T.t("Mort : ") + "120 64 -300" : T.t("Mort : ") + d.getX() + " " + d.getY() + " " + d.getZ();
         }
 
         int width(Minecraft c, boolean preview) { return c.font.width(text()); }
@@ -231,7 +223,6 @@ public final class Hud {
         return List.copyOf(l);
     }
 
-    /** Affichage en jeu. */
     public static void render(GuiGraphicsExtractor ctx, Minecraft c) {
         int w = ctx.guiWidth();
         int h = ctx.guiHeight();

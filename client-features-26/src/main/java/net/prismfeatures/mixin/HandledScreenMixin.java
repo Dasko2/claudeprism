@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Vision des shulkers : survoler un shulker dans un inventaire affiche son contenu. */
 @Mixin(AbstractContainerScreen.class)
 public abstract class HandledScreenMixin<T extends AbstractContainerMenu> extends Screen {
     @Shadow

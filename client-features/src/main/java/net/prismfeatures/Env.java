@@ -9,7 +9,6 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Accès au jeu pour {@link Extras} (noms Yarn, versions 1.19 à 1.21.x). */
 public final class Env {
     private Env() {}
 
@@ -52,7 +51,6 @@ public final class Env {
         return p == null ? 0f : p.getHealth() + p.getAbsorptionAmount();
     }
 
-    /** "" hors du jeu, "Solo" en solo, sinon l'adresse du serveur. */
     public static String server() {
         var c = mc();
         if (c.world == null) return "";

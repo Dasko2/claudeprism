@@ -6,7 +6,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 
-/** Éditeur de placement : glisser chaque élément avec la souris où on veut. */
 public class HudEditorScreen extends Screen {
     private final Screen parent;
     private Hud.Element dragging = null;
@@ -19,18 +18,19 @@ public class HudEditorScreen extends Screen {
     private int rBottom = 0;
 
     public HudEditorScreen(Screen parent) {
-        super(Component.literal("Placer les éléments"));
+        super(Component.literal(T.t("Placer les éléments")));
         this.parent = parent;
     }
 
     @Override
     protected void init() {
+        Env.leftHeld = false;
         final int bw = 90;
         final int y = this.height - 28;
         final int x0 = this.width / 2 - (2 * bw + 4) / 2;
-        this.addRenderableWidget(Button.builder(Component.literal("Réinitialiser"), b -> Config.resetPositions())
+        this.addRenderableWidget(Button.builder(Component.literal(T.t("Réinitialiser")), b -> Config.resetPositions())
                 .bounds(x0, y, bw, 20).build());
-        this.addRenderableWidget(Button.builder(Component.literal("Terminé"), b -> this.onClose())
+        this.addRenderableWidget(Button.builder(Component.literal(T.t("Terminé")), b -> this.onClose())
                 .bounds(x0 + (bw + 4), y, bw, 20).build());
     }
 
@@ -38,16 +38,15 @@ public class HudEditorScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         super.extractRenderState(ctx, mouseX, mouseY, delta);
         Minecraft c = Minecraft.getInstance();
-        ctx.centeredText(this.font, Component.literal("Glissez un élément pour le déplacer, tirez le carré en haut à gauche pour changer sa taille"), this.width / 2, 12, 0xFFFFFFFF);
+        ctx.centeredText(this.font, Component.literal(T.t("Glissez un élément pour le déplacer, tirez le carré en haut à gauche pour changer sa taille")), this.width / 2, 12, 0xFFFFFFFF);
 
-        // état de la souris (sans dépendre de la signature des événements de souris)
-        boolean down = Compat.leftMouseDown(c);
+        boolean down = Env.mouseDown(0);
         if (down && !wasDown && mouseY < this.height - 36) {
             for (Hud.Element e : Hud.ELEMENTS) {
                 int hx = e.x(this.width, c, true);
                 int hy = e.y(this.height, c, true);
                 if (mouseX >= hx - 7 && mouseX <= hx + 3 && mouseY >= hy - 7 && mouseY <= hy + 3) {
-                    resizing = e; // carré de redimensionnement (haut gauche) ; le coin bas droit reste fixe
+                    resizing = e;
                     selected = e;
                     rRight = hx + e.w(c);
                     rBottom = hy + e.h(c);
@@ -61,7 +60,7 @@ public class HudEditorScreen extends Screen {
                 int x = e.x(this.width, c, true);
                 int y = e.y(this.height, c, true);
                 if (mouseX >= x - 2 && mouseX <= x + e.w(c) + 2 && mouseY >= y - 2 && mouseY <= y + e.h(c) + 2) {
-                    dragging = e; // le dernier de la liste est « au-dessus »
+                    dragging = e;
                     selected = e;
                     grabDx = mouseX - x;
                     grabDy = mouseY - y;
@@ -122,5 +121,17 @@ public class HudEditorScreen extends Screen {
     @Override
     public void onClose() {
         if (this.minecraft != null) Compat.setScreen(this.minecraft, parent);
+    }
+
+    @Override
+    public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() == 0) Env.leftHeld = true;
+        return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event) {
+        if (event.button() == 0) Env.leftHeld = false;
+        return super.mouseReleased(event);
     }
 }

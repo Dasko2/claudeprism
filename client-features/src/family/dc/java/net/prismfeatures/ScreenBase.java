@@ -4,7 +4,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
-/** Base des écrans du mod : relie le dessin natif à Gfx. */
 public abstract class ScreenBase extends Screen {
     protected ScreenBase(Text title) { super(title); }
 

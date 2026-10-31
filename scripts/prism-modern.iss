@@ -1,4 +1,3 @@
-; Installeur unique : un seul fichier Setup.exe, sans droits administrateur.
 #ifndef SourceDir
   #define SourceDir "install"
 #endif

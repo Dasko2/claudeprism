@@ -7,7 +7,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-/** Couche d'accès aux API de Minecraft 26.x (noms Mojang). */
 public final class Compat {
     private Compat() {}
     public static boolean keyPressed(Minecraft c, int code) { return InputConstants.isKeyDown(code); }

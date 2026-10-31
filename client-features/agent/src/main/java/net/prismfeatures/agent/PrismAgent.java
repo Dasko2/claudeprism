@@ -9,18 +9,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Point d'entrée UNIQUE, chargé par le launcher avec -javaagent (donc avant n'importe quel loader :
- * Fabric, Quilt, Forge, NeoForge, vanilla).
- *
- * Il choisit dans ses ressources la charge utile (payload) adaptée au loader et à la version de
- * Minecraft, l'extrait hors du dossier mods (donc invisible pour le joueur) et l'accroche au loader.
- *
- * Arguments (séparés par « | ») : loader=fabric|mc=1.21.1|cache=/chemin/du/cache
- *
- * Payloads, par ordre de préférence : /payloads/<loader>-<mc>.jar, /payloads/<loader>-<major.minor>.jar,
- * /payloads/<loader>-any.jar
- */
 public final class PrismAgent {
     private PrismAgent() {}
 
@@ -40,7 +28,7 @@ public final class PrismAgent {
             File jar = extract(resource, cache == null ? new File(System.getProperty("java.io.tmpdir"), "prismfeatures") : new File(cache));
             attach(loader, jar);
         } catch (Throwable t) {
-            // un échec ne doit JAMAIS empêcher le jeu de démarrer
+
             log("erreur ignorée : " + t);
         }
     }
@@ -57,7 +45,7 @@ public final class PrismAgent {
                 log("payload Quilt chargé : " + jar);
                 break;
             default:
-                // Forge / NeoForge : accroche cachée pas encore implémentée
+
                 log("loader « " + loader + " » : chargement caché pas encore disponible");
         }
     }
@@ -78,7 +66,6 @@ public final class PrismAgent {
         return null;
     }
 
-    /** "1.21.1" -> "1.21" ; "1.8.9" -> "1.8" */
     private static String majorMinor(String mc) {
         String[] parts = mc.split("\\.");
         return parts.length >= 2 ? parts[0] + "." + parts[1] : mc;

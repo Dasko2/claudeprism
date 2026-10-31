@@ -7,7 +7,6 @@ base { archivesName = 'prismfeatures-fabric' }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    // Fabric Loader uniquement : aucune autre dépendance à installer
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 }
 
@@ -17,6 +16,7 @@ processResources {
 }
 
 sourceSets.main.java.srcDir "src/compat/${project.compat}/java"
+processResources { from("../lang") { into "prismlang" } }
 
 tasks.withType(JavaCompile).configureEach { options.release = 25; options.compilerArgs << '-Xmaxerrs' << '1000' }
 java { sourceCompatibility = JavaVersion.VERSION_25; targetCompatibility = JavaVersion.VERSION_25 }

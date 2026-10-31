@@ -8,7 +8,6 @@ import net.minecraft.world.phys.HitResult;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Accès au jeu pour Extras (noms Mojang). */
 public final class Env {
     private Env() {}
 
@@ -21,10 +20,12 @@ public final class Env {
 
     private static Minecraft mc() { return Minecraft.getInstance(); }
 
+    public static volatile boolean leftHeld = false;
+
     public static boolean mouseDown(int button) {
         Minecraft c = mc();
         if (c.mouseHandler == null) return false;
-        return button == 0 ? Compat.leftMouseDown(c) : c.mouseHandler.isRightPressed();
+        return button == 0 ? (leftHeld || Compat.leftMouseDown(c)) : c.mouseHandler.isRightPressed();
     }
 
     public static boolean keyDown(String k) {
@@ -51,7 +52,6 @@ public final class Env {
         return p == null ? 0f : p.getHealth() + p.getAbsorptionAmount();
     }
 
-    /** "" hors du jeu, "Solo" en solo, sinon l'adresse du serveur. */
     public static String server() {
         var c = mc();
         if (c.level == null) return "";
