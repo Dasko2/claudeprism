@@ -1,5 +1,6 @@
 package net.prismfeatures.mixin;
 
+import net.prismfeatures.T;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.prismfeatures.Compat;
