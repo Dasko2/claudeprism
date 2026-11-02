@@ -21,6 +21,13 @@ public final class Env {
     private static Minecraft mc() { return Minecraft.getInstance(); }
 
     public static volatile boolean leftHeld = false;
+    public static volatile boolean clickPending = false;
+
+    public static boolean consumeClick() {
+        boolean c = clickPending;
+        clickPending = false;
+        return c;
+    }
 
     public static boolean mouseDown(int button) {
         Minecraft c = mc();

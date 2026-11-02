@@ -26,6 +26,7 @@ public final class MenuUi {
     private boolean click;
 
     public MenuUi(Runnable openEditor, Runnable close) {
+        Env.clickPending = false;
         this.openEditor = openEditor;
         this.close = close;
     }
@@ -105,7 +106,7 @@ public final class MenuUi {
         this.mx = mouseX;
         this.my = mouseY;
         boolean down = Env.mouseDown(0);
-        this.click = down && !wasDown;
+        this.click = (down && !wasDown) | Env.consumeClick();
         wasDown = down;
 
         int sw = gfx.width();

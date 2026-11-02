@@ -32,7 +32,10 @@ public class FeaturesScreen extends Screen {
 
     @Override
     public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0) Env.leftHeld = true;
+        if (event.button() == 0) {
+            Env.leftHeld = true;
+            Env.clickPending = true;
+        }
         return super.mouseClicked(event, doubleClick);
     }
 
