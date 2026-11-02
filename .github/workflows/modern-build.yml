@@ -103,7 +103,7 @@ jobs:
           J=$(find ~/.gradle client-features-26 .gradle -name '*.jar' -size +5M 2>/dev/null | while read j; do unzip -l "$j" 2>/dev/null | grep -q 'net/minecraft/client/gui/Gui.class' && echo "$j" && break; done)
           echo "jar=$J"
           javap -p -cp "$J" net.minecraft.client.gui.Gui | grep -i "extract\|render" | head -40 | paste -sd'|' | sed 's/^/::error title=inspect-gui::/'
-          javap -p -cp "$J" net.minecraft.client.MouseHandler | head -60 | paste -sd'|' | sed 's/^/::error title=inspect-mouse::/'
+          javap -p -cp "$J" net.minecraft.client.gui.Hud | grep -i "extract\|render\|class" | head -40 | paste -sd'|' | sed 's/^/::error title=inspect-hud::/'
       - uses: actions/upload-artifact@v4
         with:
           name: payload-${{ matrix.mc }}
