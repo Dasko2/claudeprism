@@ -106,7 +106,13 @@ public final class MenuUi {
         this.mx = mouseX;
         this.my = mouseY;
         boolean down = Env.mouseDown(0);
-        this.click = (down && !wasDown) | Env.consumeClick();
+        boolean latched = Env.consumeClick();
+        if (latched) {
+            this.mx = (int) Env.clickX;
+            this.my = (int) Env.clickY;
+            PrismFeatures.LOGGER.info("[PrismFeatures] clic traité {} {} (souris {} {})", mx, my, mouseX, mouseY);
+        }
+        this.click = (down && !wasDown) | latched;
         wasDown = down;
 
         int sw = gfx.width();

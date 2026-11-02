@@ -22,6 +22,8 @@ public final class Env {
 
     public static volatile boolean leftHeld = false;
     public static volatile boolean clickPending = false;
+    public static volatile double clickX = 0;
+    public static volatile double clickY = 0;
 
     public static boolean consumeClick() {
         boolean c = clickPending;

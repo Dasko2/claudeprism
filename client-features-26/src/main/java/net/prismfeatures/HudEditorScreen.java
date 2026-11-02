@@ -129,6 +129,9 @@ public class HudEditorScreen extends Screen {
         if (event.button() == 0) {
             Env.leftHeld = true;
             Env.clickPending = true;
+            Env.clickX = event.x();
+            Env.clickY = event.y();
+            PrismFeatures.LOGGER.info("[PrismFeatures] clic {} {}", event.x(), event.y());
         }
         return super.mouseClicked(event, doubleClick);
     }
