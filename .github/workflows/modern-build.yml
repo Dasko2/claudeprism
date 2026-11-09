@@ -94,6 +94,15 @@ jobs:
           fi
           mkdir -p ../payloads-out
           cp build/libs/prismfeatures-fabric-*.jar ../payloads-out/fabric-${{ matrix.mc }}.jar
+      - name: Inspect
+        if: ${{ matrix.mc == '26.3' }}
+        working-directory: client-features-26
+        shell: bash
+        run: |
+          set +e
+          J=$(find ~/.gradle .gradle -name '*.jar' -size +5M 2>/dev/null | while read j; do unzip -l "$j" 2>/dev/null | grep -q 'net/minecraft/client/gui/screens/Screen.class' && echo "$j" && break; done)
+          javap -p -c -cp "$J" net.minecraft.client.MouseHandler | awk '/public void onButton/{f=1} f&&/public void fillMousePositionDetails/{exit} f' | grep -E "invoke|if|getfield|goto|instanceof" | sed 's/ *\/\/ */ /' | cut -c1-150 | head -90 | paste -sd'|' | sed 's/^/::error title=onbutton::/'
+          javap -p -cp "$J" net.minecraft.client.gui.Gui | grep -i "screen\|overlay" | paste -sd'|' | sed 's/^/::error title=guiscreen::/'
       - uses: actions/upload-artifact@v4
         with:
           name: payload-${{ matrix.mc }}
