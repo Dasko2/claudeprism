@@ -15,6 +15,7 @@ public class FeaturesScreen extends Screen {
     public FeaturesScreen(Screen parent) {
         super(Component.literal(T.t("Menu de config")));
         this.parent = parent;
+        PrismFeatures.LOGGER.info("[PrismFeatures] menu ouvert");
     }
 
     @Override
