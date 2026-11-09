@@ -19,7 +19,7 @@ public final class Compat {
     public static void pop(GuiGraphicsExtractor ctx) { ctx.pose().popMatrix(); }
     public static void overlay(GuiGraphicsExtractor ctx, Minecraft c, ItemStack st, int x, int y) { ctx.itemDecorations(c.font, st, x, y); }
     public static Screen screen(Minecraft c) { return c.gui.screen(); }
-    public static void setScreen(Minecraft c, Screen s) { c.gui.setScreen(s); }
+    public static void setScreen(Minecraft c, Screen s) { c.setScreenAndShow(s); }
     public static void overlayMessage(Minecraft c, Component m) { c.gui.hud.setOverlayMessage(m, false); }
     public static boolean hudHidden(Minecraft c) { return c.gui.hud.isHidden(); }
     public static boolean leftMouseDown(Minecraft c) { return c.mouseHandler.isLeftPressed(); }
