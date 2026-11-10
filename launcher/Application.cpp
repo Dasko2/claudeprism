@@ -933,6 +933,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("AutoWorldBackup", true);
         m_settings->registerSetting("AskInstallFabric", true);
         m_settings->registerSetting("DiscordRpc", true);
+        m_settings->registerSetting("PrismLogo", true);
         m_settings->registerSetting("DiscordClientId", "");
 
         // Custom Technic Client ID

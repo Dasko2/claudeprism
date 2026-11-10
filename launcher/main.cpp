@@ -69,6 +69,7 @@ int main(int argc, char* argv[])
 
             Q_INIT_RESOURCE(shaders);
             Q_INIT_RESOURCE(prismlang);
+            Q_INIT_RESOURCE(prismlogo);
 #ifdef PRISM_EMBEDDED_AGENT
             Q_INIT_RESOURCE(features);
 #endif

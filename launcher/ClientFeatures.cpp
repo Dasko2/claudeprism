@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 
@@ -80,10 +81,14 @@ static QString extractPayload(const QString& loader, const QString& mc)
     return {};
 }
 
+static void installLogoPack(MinecraftInstance* instance);
+
 void apply(MinecraftInstance* instance)
 {
     if (!instance)
         return;
+    if (APPLICATION->settings()->get("PrismLogo").toBool())
+        installLogoPack(instance);
     auto* settings = APPLICATION->settings();
 
     QFile::remove(QDir(QDir(instance->gameRoot()).filePath("mods")).filePath("prismfeatures.jar"));
@@ -101,6 +106,66 @@ void apply(MinecraftInstance* instance)
     QFile out(QDir(configDir).filePath("prismfeatures.json"));
     if (out.open(QIODevice::WriteOnly | QIODevice::Truncate))
         out.write(QJsonDocument(config).toJson(QJsonDocument::Indented));
+}
+
+static void installLogoPack(MinecraftInstance* instance)
+{
+    const QString packName = QStringLiteral("PrismLauncherLogo");
+    const QString root = instance->gameRoot();
+    const QString packDir = QDir(QDir(root).filePath("resourcepacks")).filePath(packName);
+    const QString texDir = QDir(packDir).filePath("assets/minecraft/textures/gui/title");
+    FS::ensureFolderPathExists(texDir);
+
+    for (const char* name : { "minecraft.png", "edition.png" }) {
+        QFile in(QStringLiteral(":/prismlogo/") + QLatin1String(name));
+        if (!in.open(QIODevice::ReadOnly))
+            return;
+        const QByteArray data = in.readAll();
+        const QString target = QDir(texDir).filePath(QLatin1String(name));
+        QFile cur(target);
+        if (cur.open(QIODevice::ReadOnly) && cur.readAll() == data)
+            continue;
+        cur.close();
+        QFile out(target);
+        if (out.open(QIODevice::WriteOnly | QIODevice::Truncate))
+            out.write(data);
+    }
+
+    QFile meta(QDir(packDir).filePath("pack.mcmeta"));
+    if (meta.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        meta.write(
+            "{\"pack\":{\"description\":\"PrismLauncher\",\"pack_format\":15,"
+            "\"supported_formats\":{\"min_inclusive\":1,\"max_inclusive\":9999},"
+            "\"min_format\":1,\"max_format\":9999}}");
+        meta.close();
+    }
+
+    const QString optionsPath = QDir(root).filePath("options.txt");
+    const QString entry = "file/" + packName;
+    QStringList lines;
+    QFile options(optionsPath);
+    if (options.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        lines = QString::fromUtf8(options.readAll()).split('\n');
+        options.close();
+    }
+    bool found = false;
+    for (QString& line : lines) {
+        if (!line.startsWith("resourcePacks:"))
+            continue;
+        found = true;
+        QJsonArray arr = QJsonDocument::fromJson(line.mid(14).toUtf8()).array();
+        for (const QJsonValue& v : arr)
+            if (v.toString() == entry)
+                return;
+        if (arr.isEmpty())
+            arr.append("vanilla");
+        arr.append(entry);
+        line = "resourcePacks:" + QString::fromUtf8(QJsonDocument(arr).toJson(QJsonDocument::Compact));
+    }
+    if (!found)
+        lines.prepend("resourcePacks:[\"vanilla\",\"" + entry + "\"]");
+    if (options.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+        options.write(lines.join('\n').toUtf8());
 }
 
 void backupLatestWorld(MinecraftInstance* instance)
