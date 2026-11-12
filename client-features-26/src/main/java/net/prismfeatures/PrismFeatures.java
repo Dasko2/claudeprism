@@ -55,7 +55,7 @@ public class PrismFeatures implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         Config.load();
-        LOGGER.info("[PrismFeatures] chargé - version de test clics 6");
+        LOGGER.info("[PrismFeatures] chargé - version de test interface 1");
     }
 
     public static void safe(String name, Runnable r) {

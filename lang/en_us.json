@@ -150,5 +150,16 @@
   "Cette instance n'a pas de mod loader : night vision, zoom, HUD et le reste ne seront pas actifs.\nInstaller Fabric maintenant (aucun mod à gérer, c'est automatique) ?": "This instance has no mod loader: night vision, zoom, HUD and the rest will not be active.\nInstall Fabric now (no mods to manage, it is automatic)?",
   "Installer Fabric": "Install Fabric",
   "Pas maintenant": "Not now",
-  "Ne plus demander": "Don't ask again"
+  "Ne plus demander": "Don't ask again",
+  "MODS": "MODS",
+  "VISEUR": "CROSSHAIR",
+  "TOUCHES": "KEYS",
+  "TOUT": "ALL",
+  "JEU": "GAMEPLAY",
+  "AFFICHAGE": "HUD",
+  "activés": "enabled",
+  "PLACER": "MOVE",
+  "ACTIVÉ": "ENABLED",
+  "DÉSACTIVÉ": "DISABLED",
+  "VERROUILLÉ": "LOCKED"
 }
