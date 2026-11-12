@@ -20,7 +20,7 @@ public abstract class MouseMixin {
         var screen = mc.gui.screen();
         PrismFeatures.LOGGER.info("[PrismFeatures] souris bouton={} action={} ecran={}", info.button(), action, screen == null ? "aucun" : screen.getClass().getSimpleName());
         if (!(screen instanceof FeaturesScreen) && !(screen instanceof HudEditorScreen)) return;
-        if (info.button() != 0) return;
+        if (info.button() != 0 && info.button() != 1) return;
         MouseHandler self = (MouseHandler) (Object) this;
         if (action == 1) {
             Env.leftHeld = true;
